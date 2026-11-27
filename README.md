@@ -52,3 +52,10 @@ node .verify/pvp-browser-test.mjs    # 双浏览器联机端到端
 - 生产环境 Service Worker 缓存模型/音频，重复访问秒开
 - 连败追赶平衡：连败金币补贴、高品质奖励保底、血量落后补偿、连胜奖励质量衰减
 - 战斗回放时间轴驱动模型动画与音效同步
+
+## 部署
+
+- **前端**：push 到 `main` 后 GitHub Actions 自动构建并发布到 GitHub Pages（`https://pure281.github.io/VK_AutoChess/`）。需要在仓库 Settings → Pages 将 Source 设为 **GitHub Actions**。
+- **资源**：模型/立绘/音频托管在 Cloudflare R2 公共桶，前端默认从 R2 加载；本地开发如需离线资源，在 `.env.local` 写 `VITE_ASSET_BASE=local`。
+- **资源同步**：`python tools/upload_r2.py`（凭据放在 `.env.local`，见 `.env.example`）。
+- **联机服务器**：静态托管不包含 WebSocket PVP 服务，联机模式需自行运行 `npm run pvp:server`。

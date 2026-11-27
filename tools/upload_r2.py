@@ -68,7 +68,13 @@ def main():
         endpoint_url=ENDPOINT,
         aws_access_key_id=key,
         aws_secret_access_key=secret,
-        config=Config(signature_version="s3v4", retries={"max_attempts": 5, "mode": "standard"}),
+        config=Config(
+            signature_version="s3v4",
+            retries={"max_attempts": 5, "mode": "standard"},
+            # Optional proxy via R2_PROXY env (e.g. http://127.0.0.1:7890) can
+            # significantly speed up Cloudflare access on some networks.
+            proxies=({"http": os.environ.get("R2_PROXY", ""), "https": os.environ.get("R2_PROXY", "")} if os.environ.get("R2_PROXY", "") else {}),
+        ),
     )
 
     files = []
