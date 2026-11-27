@@ -1,17 +1,21 @@
 # Nginx reverse proxy for the Valkyrie PVP WebSocket server.
 # TLS is REQUIRED: the game is served over HTTPS and browsers block plain ws://.
 #
-# 1. Point ws.your-domain.com DNS A record to this server.
-# 2. Issue a certificate, e.g.:  certbot --nginx -d ws.your-domain.com
-# 3. Copy this file to /etc/nginx/conf.d/valkyrie-pvp.conf (adjust paths),
-#    then: nginx -t && systemctl reload nginx
+# This file is the INITIAL HTTP-only config. certbot will add the 443/SSL
+# server block automatically, exactly like the other "managed by Certbot"
+# sites on this server. Steps:
+#
+#   1. Create the DNS A record: pvp.pure81.site -> this server's IP
+#   2. cp server/nginx-pvp.conf.example /etc/nginx/conf.d/valkyrie-pvp.conf
+#   3. nginx -t && systemctl reload nginx
+#   4. certbot --nginx -d pvp.pure81.site
+#      (certbot creates the 443 block with certificates and redirects 80->443)
+#
+# Existing server blocks are untouched: nginx routes by server_name.
 
 server {
-    listen 443 ssl;
-    server_name ws.your-domain.com;
-
-    ssl_certificate     /etc/letsencrypt/live/ws.your-domain.com/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/ws.your-domain.com/privkey.pem;
+    listen 80;
+    server_name pvp.pure81.site;
 
     location / {
         proxy_pass http://127.0.0.1:8787;
@@ -29,11 +33,4 @@ server {
         proxy_read_timeout 3600s;
         proxy_send_timeout 3600s;
     }
-}
-
-# Optional: redirect plain HTTP to HTTPS
-server {
-    listen 80;
-    server_name ws.your-domain.com;
-    return 301 https://$host$request_uri;
 }
