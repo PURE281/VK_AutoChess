@@ -1,7 +1,8 @@
-const VERSION = "2025-03-runtime-v2";
+const VERSION = "2025-03-runtime-v3";
 const ASSET_CACHE = `valkyrie-assets-${VERSION}`;
 const MODEL_CACHE = `valkyrie-models-${VERSION}`;
 const DATA_CACHE = `valkyrie-data-${VERSION}`;
+const R2_HOST = "pub-1dfe6bb1f974425580d2845f59875408.r2.dev";
 const MODEL_CACHE_LIMIT = 140;
 const ASSET_CACHE_LIMIT = 700;
 
@@ -48,13 +49,15 @@ self.addEventListener("fetch", (event) => {
   const request = event.request;
   if (request.method !== "GET") return;
   const url = new URL(request.url);
-  if (url.origin !== self.location.origin) return;
+  const sameOrigin = url.origin === self.location.origin;
+  const isR2 = url.hostname === R2_HOST;
+  if (!sameOrigin && !isR2) return;
   const path = url.pathname;
   if (path.includes("/assets/models/")) {
     event.respondWith(cacheFirst(request, MODEL_CACHE, MODEL_CACHE_LIMIT));
-  } else if (path.includes("/assets/")) {
+  } else if (isR2 || path.includes("/assets/")) {
     event.respondWith(cacheFirst(request, ASSET_CACHE, ASSET_CACHE_LIMIT));
-  } else if (path.includes("/data/")) {
+  } else if (sameOrigin && path.includes("/data/")) {
     event.respondWith(staleWhileRevalidate(request));
   }
 });

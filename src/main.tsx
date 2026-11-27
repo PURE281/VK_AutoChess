@@ -1,7 +1,10 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App";
+import { assetUrl } from "./config";
 import "./styles.css";
+
+document.documentElement.style.setProperty("--arena-bg", `url("${assetUrl("assets/scenes/arena-bg.png")}")`);
 
 createRoot(document.getElementById("root")!).render(
   <React.StrictMode>

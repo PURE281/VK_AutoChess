@@ -48,10 +48,7 @@ export async function loadGameData(onProgress?: (progress: LoadProgress) => void
   return { dataset, champions, season1 };
 }
 
-export function assetUrl(path: string | null | undefined): string {
-  if (!path) return "";
-  return `${import.meta.env.BASE_URL}${path}`;
-}
+export { assetUrl } from "./config";
 
 export function raceName(store: DataStore, race: number): string {
   return store.dataset.constants.races[String(race)]?.name ?? `种族${race}`;

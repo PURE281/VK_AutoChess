@@ -802,7 +802,7 @@ button:disabled { cursor: not-allowed; opacity: 0.48; }
 .board-3d-wrap {
   background:
     linear-gradient(rgba(4,8,18,.18), rgba(4,8,18,.24)),
-    url('/assets/scenes/arena-bg.png') center / cover no-repeat;
+    var(--arena-bg, none) center / cover no-repeat;
 }
 
 

@@ -1,3 +1,4 @@
+import { assetUrl } from "./data";
 type SoundKey =
   | "bgm_home"
   | "bgm_map"
@@ -98,7 +99,7 @@ class SoundManager {
   }
 
   private url(key: SoundKey): string {
-    return `${import.meta.env.BASE_URL}assets/audio/${key}.mp3`;
+    return assetUrl(`assets/audio/${key}.mp3`);
   }
 
   private preload(url: string): void {
@@ -194,7 +195,7 @@ class SoundManager {
     if (now - (this.recentVoice.get(key) ?? -9999) < throttleMs) return null;
     this.recentVoice.set(key, now);
     const file = available[Math.floor(Math.random() * available.length)];
-    const audio = this.createAudio(`${import.meta.env.BASE_URL}${file}`, volume);
+    const audio = this.createAudio(assetUrl(file), volume);
     if (maxMs > 0) window.setTimeout(() => audio.pause(), maxMs);
     void audio.play().catch(() => undefined);
     return audio;
@@ -215,10 +216,10 @@ class SoundManager {
       const clips = this.voices.get(label.championId);
       if (clips) {
         for (const clip of ["hit_1", "hit_2", "skill_1", "skill_2"]) {
-          if (clips[clip]) this.preload(`${import.meta.env.BASE_URL}${clips[clip]}`);
+          if (clips[clip]) this.preload(assetUrl(clips[clip]));
         }
       }
-      if (this.skillAudio.has(label.championId)) this.preload(`${import.meta.env.BASE_URL}assets/audio/skills/${label.championId}.mp3`);
+      if (this.skillAudio.has(label.championId)) this.preload(assetUrl(`assets/audio/skills/${label.championId}.mp3`));
     }
   }
 
@@ -245,7 +246,7 @@ class SoundManager {
     const now = performance.now();
     if (now - (this.recentSkill.get(championId) ?? -9999) < 420) return;
     this.recentSkill.set(championId, now);
-    const audio = this.createAudio(`${import.meta.env.BASE_URL}assets/audio/skills/${championId}.mp3`, 0.2);
+    const audio = this.createAudio(assetUrl(`assets/audio/skills/${championId}.mp3`), 0.2);
     if (combat) this.trackCombatAudio(audio, 2400);
     void audio.play().catch(() => undefined);
   }
