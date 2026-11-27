@@ -1,12 +1,12 @@
 // pm2 process config for the PVP WebSocket server.
 // Usage:  pm2 start ecosystem.config.cjs && pm2 save
-// Requires Node.js >= 20 (uses `node --import tsx` to run TypeScript directly,
-// no npm wrapper process, so pm2 stop/restart signals reach the server itself).
+// Requires Node.js >= 20. Uses `node --import tsx` for TypeScript; the plain .js
+// entry keeps pm2 from trying to inject its own ts-node loader.
 module.exports = {
   apps: [
     {
       name: "valkyrie-pvp",
-      script: "server/pvp-server.ts",
+      script: "server/start.js",
       interpreter: "node",
       interpreter_args: "--import tsx",
       // Resolve to whatever directory this file lives in, so the config works
