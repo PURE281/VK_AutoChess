@@ -1,0 +1,49 @@
+{
+  "sounds": {
+    "205001": {
+      "skillId": 20032,
+      "file": "assets/audio/skills/205001.mp3",
+      "bundle": "additional_sounds_as_20032.unity3d"
+    },
+    "101002": {
+      "skillId": 20015,
+      "file": "assets/audio/skills/101002.mp3",
+      "bundle": "additional_sounds_as_20015.unity3d"
+    },
+    "101004": {
+      "skillId": 20005,
+      "file": "assets/audio/skills/101004.mp3",
+      "bundle": "additional_sounds_as_20005.unity3d"
+    },
+    "101005": {
+      "skillId": 20019,
+      "file": "assets/audio/skills/101005.mp3",
+      "bundle": "additional_sounds_as_20019.unity3d"
+    },
+    "101006": {
+      "skillId": 20022,
+      "file": "assets/audio/skills/101006.mp3",
+      "bundle": "additional_sounds_as_20022.unity3d"
+    },
+    "102002": {
+      "skillId": 20017,
+      "file": "assets/audio/skills/102002.mp3",
+      "bundle": "additional_sounds_as_20017.unity3d"
+    },
+    "302032": {
+      "skillId": 20333,
+      "file": "assets/audio/skills/302032.mp3",
+      "bundle": "additional_sounds_as_20333.unity3d"
+    },
+    "102003": {
+      "skillId": 20014,
+      "file": "assets/audio/skills/102003.mp3",
+      "bundle": "additional_sounds_as_20014.unity3d"
+    },
+    "201001": {
+      "skillId": 20025,
+      "file": "assets/audio/skills/201001.mp3",
+      "bundle": "additional_sounds_as_20025.unity3d"
+    }
+  }
+}

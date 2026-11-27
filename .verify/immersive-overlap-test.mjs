@@ -1,0 +1,10 @@
+import puppeteer from 'puppeteer-core';
+const browser=await puppeteer.launch({executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true,args:['--disable-gpu','--no-sandbox','--enable-unsafe-swiftshader'],defaultViewport:{width:1280,height:850}});
+const page=await browser.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));await page.goto('http://127.0.0.1:5173/',{waitUntil:'networkidle2'});await page.waitForSelector('.mode-card.pve');await page.click('.mode-card.pve');await page.waitForSelector('.battle-shell');
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));await sleep(400);
+await page.evaluate(()=>document.querySelector('.shop-card:not(.empty)')?.click());await sleep(150);await page.evaluate(()=>document.querySelector('.bench-slot.filled')?.click());await sleep(100);
+const pos=await page.evaluate(()=>{const r=document.querySelector('.board-canvas-wrap').getBoundingClientRect();return {x:r.left+r.width*.5,y:r.top+r.height*.74}});await page.mouse.click(pos.x,pos.y);await sleep(220);
+await page.evaluate(()=>[...document.querySelectorAll('.shop-actions button')].find(x=>x.textContent.includes('开始战斗'))?.click());await sleep(600);
+await page.click('.drawer-tab-right');await sleep(280);
+const overlap=await page.evaluate(()=>{const a=document.querySelector('.combat-stats-float').getBoundingClientRect();const b=document.querySelector('.right-drawer').getBoundingClientRect();return {stats:a.toJSON(),drawer:b.toJSON(),overlap:!(a.bottom<=b.top||b.bottom<=a.top||a.right<=b.left||b.right<=a.left)}});
+console.log(JSON.stringify({overlap,errors},null,2));await browser.close();

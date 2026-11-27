@@ -1,0 +1,13 @@
+import puppeteer from 'puppeteer-core';
+const browser=await puppeteer.launch({executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true,args:['--disable-gpu','--no-sandbox','--enable-unsafe-swiftshader'],defaultViewport:{width:1366,height:900}});
+const page=await browser.newPage();
+const failed=[];const responses=[];const consoleErrors=[];
+page.on('requestfailed',r=>failed.push({url:r.url(),error:r.failure()?.errorText,type:r.resourceType()}));
+page.on('response',r=>{if(r.status()>=400)responses.push({url:r.url(),status:r.status()})});
+page.on('console',m=>{if(m.type()==='error')consoleErrors.push(m.text())});
+await page.goto('http://127.0.0.1:4173/',{waitUntil:'networkidle2',timeout:30000});
+await new Promise(r=>setTimeout(r,2200));
+await page.click('.mode-card.pve').catch(e=>failed.push({url:'click',error:e.message,type:'test'}));
+await new Promise(r=>setTimeout(r,3200));
+console.log(JSON.stringify({failed,responses,consoleErrors},null,2));
+await browser.close();

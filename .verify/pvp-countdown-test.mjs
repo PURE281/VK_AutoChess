@@ -1,0 +1,5 @@
+import WebSocket from 'ws';
+function client(name){const ws=new WebSocket('ws://127.0.0.1:8787');const c={ws,latest:null,code:null};ws.on('message',raw=>{const m=JSON.parse(String(raw));if(m.type==='state'){c.latest=m;c.code=m.room.code}});c.open=new Promise((res,rej)=>{ws.on('open',res);ws.on('error',rej)});c.send=o=>ws.send(JSON.stringify(o));return c}
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+async function waitFor(fn,label,timeout=6000){const st=Date.now();while(Date.now()-st<timeout){const v=fn();if(v)return v;await sleep(80)}throw Error('timeout '+label)}
+const a=client('TimerA'),b=client('TimerB');await Promise.all([a.open,b.open]);a.send({type:'create',name:'TimerA'});await waitFor(()=>a.code,'code');b.send({type:'join',name:'TimerB',code:a.code});await waitFor(()=>a.latest?.room.phase==='planning'&&b.latest?.room.phase==='planning','planning');await sleep(250);console.log(JSON.stringify({phase:a.latest.room.phase,deadline:a.latest.room.planningDeadline,serverNow:a.latest.room.serverNow,seconds:Math.ceil((a.latest.room.planningDeadline-a.latest.room.serverNow)/1000),bDeadline:b.latest.room.planningDeadline},null,2));a.ws.close();b.ws.close();

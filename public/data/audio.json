@@ -1,0 +1,122 @@
+{
+  "version": 1,
+  "generatedAt": "2026-11-26T19:29:37",
+  "sounds": {
+    "bgm_home": {
+      "file": "assets/audio/bgm_home.mp3",
+      "bundle": "additional_sounds_home_loop.unity3d",
+      "size": 942717
+    },
+    "bgm_map": {
+      "file": "assets/audio/bgm_map.mp3",
+      "bundle": "additional_sounds_map_loop.unity3d",
+      "size": 657518
+    },
+    "bgm_battle": {
+      "file": "assets/audio/bgm_battle.mp3",
+      "bundle": "additional_sounds_battle_loop1.unity3d",
+      "size": 1175871
+    },
+    "bgm_battle_pvp": {
+      "file": "assets/audio/bgm_battle_pvp.mp3",
+      "bundle": "additional_sounds_arena_loop.unity3d",
+      "size": 553730
+    },
+    "battle_start": {
+      "file": "assets/audio/battle_start.mp3",
+      "bundle": "additional_sounds_s_battle_start.unity3d",
+      "size": 10785
+    },
+    "attack": {
+      "file": "assets/audio/attack.mp3",
+      "bundle": "additional_sounds_s_knife.unity3d",
+      "size": 8680
+    },
+    "damage": {
+      "file": "assets/audio/damage.mp3",
+      "bundle": "additional_sounds_s_battle_damage.unity3d",
+      "size": 4652
+    },
+    "critical": {
+      "file": "assets/audio/critical.mp3",
+      "bundle": "additional_sounds_s_battle_damage_critical.unity3d",
+      "size": 9099
+    },
+    "heal": {
+      "file": "assets/audio/heal.mp3",
+      "bundle": "additional_sounds_s_heal.unity3d",
+      "size": 12173
+    },
+    "death": {
+      "file": "assets/audio/death.mp3",
+      "bundle": "additional_sounds_s_battle_dead.unity3d",
+      "size": 9095
+    },
+    "skill": {
+      "file": "assets/audio/skill.mp3",
+      "bundle": "additional_sounds_s_battle_burst.unity3d",
+      "size": 10786
+    },
+    "burst": {
+      "file": "assets/audio/burst.mp3",
+      "bundle": "additional_sounds_s_battle_burst_max.unity3d",
+      "size": 13727
+    },
+    "win": {
+      "file": "assets/audio/win.mp3",
+      "bundle": "additional_sounds_s_battle_win.unity3d",
+      "size": 11596
+    },
+    "lose": {
+      "file": "assets/audio/lose.mp3",
+      "bundle": "additional_sounds_s_battle_lose.unity3d",
+      "size": 7565
+    },
+    "buy": {
+      "file": "assets/audio/buy.mp3",
+      "bundle": "additional_sounds_s_new_character_appeal.unity3d",
+      "size": 11045
+    },
+    "item": {
+      "file": "assets/audio/item.mp3",
+      "bundle": "additional_sounds_s_itemget.unity3d",
+      "size": 32799
+    },
+    "reward": {
+      "file": "assets/audio/reward.mp3",
+      "bundle": "additional_sounds_s_battle_result_get.unity3d",
+      "size": 9253
+    },
+    "levelup": {
+      "file": "assets/audio/levelup.mp3",
+      "bundle": "additional_sounds_s_levelup_p.unity3d",
+      "size": 17103
+    },
+    "combine": {
+      "file": "assets/audio/combine.mp3",
+      "bundle": "additional_sounds_s_levelup_c.unity3d",
+      "size": 19058
+    },
+    "click": {
+      "file": "assets/audio/click.mp3",
+      "bundle": "additional_sounds_flappy_game_button.unity3d",
+      "size": 1712
+    },
+    "error": {
+      "file": "assets/audio/error.mp3",
+      "bundle": "additional_sounds_s_incorrect.unity3d",
+      "size": 15345
+    },
+    "quest_clear": {
+      "file": "assets/audio/quest_clear.mp3",
+      "bundle": "additional_sounds_quest_clear.unity3d",
+      "size": 326544
+    },
+    "treasure": {
+      "file": "assets/audio/treasure.mp3",
+      "bundle": "additional_sounds_s_treasure_open.unity3d",
+      "size": 2908
+    }
+  },
+  "missing": []
+}

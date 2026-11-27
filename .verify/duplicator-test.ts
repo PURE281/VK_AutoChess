@@ -1,0 +1,26 @@
+import { readFileSync } from "node:fs";
+import type { RosterDataset, Champion, GameState } from "../src/types";
+import type { DataStore } from "../src/data";
+import { createGameReducer, createInitialState } from "../src/game/engine";
+
+const dataset = JSON.parse(readFileSync("public/data/roster.json", "utf8")) as RosterDataset;
+const champions = new Map<number, Champion>();
+for (const champion of dataset.characters) champions.set(champion.id, champion);
+const store: DataStore = { dataset, champions, season1: dataset.seasons.season1.map((id) => champions.get(id)).filter((c): c is Champion => Boolean(c)) };
+const dispatch = createGameReducer(store);
+let state: GameState = createInitialState(store, 987654, "pve");
+const first = state.players[0].shop.findIndex((slot) => slot.championId != null);
+if (first < 0) throw new Error("no purchasable shop unit");
+state = dispatch(state, { type: "BUY_UNIT", slot: first });
+const beforeUnits = state.players[0].bench.filter(Boolean).length;
+if (beforeUnits !== 1) throw new Error(`expected one owned unit, got ${beforeUnits}`);
+state = { ...state, phase: "augment", pendingAugment: { choices: ["duplicator"], round: state.round } };
+state = dispatch(state, { type: "CHOOSE_AUGMENT", id: "duplicator" });
+if (!state.players[0].itemInventory.includes("hero_duplicator")) throw new Error("duplicator augment did not grant consumable");
+const itemIndex = state.players[0].itemInventory.indexOf("hero_duplicator");
+state = dispatch(state, { type: "EQUIP_ITEM", itemIndex, loc: { type: "bench", index: 0 } });
+const units = state.players[0].bench.filter(Boolean);
+if (units.length !== beforeUnits + 1) throw new Error(`copy not created: ${units.length}`);
+if (state.players[0].itemInventory.includes("hero_duplicator")) throw new Error("consumable was not consumed");
+if (units[0]?.championId !== units[1]?.championId) throw new Error("copy champion mismatch");
+console.log(JSON.stringify({ ok: true, units: units.length, copied: units[1], log: state.log.slice(-4) }, null, 2));

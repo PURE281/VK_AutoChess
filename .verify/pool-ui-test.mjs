@@ -1,0 +1,10 @@
+import puppeteer from 'puppeteer-core';
+const browser=await puppeteer.launch({executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true,args:['--disable-gpu','--no-sandbox','--enable-unsafe-swiftshader'],defaultViewport:{width:1280,height:900}});
+const page=await browser.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});
+await page.goto('http://127.0.0.1:5173/',{waitUntil:'networkidle2'});await page.waitForSelector('.mode-card.pvp');await page.click('.mode-card.pvp');await page.waitForSelector('.pool-picker');
+const info=await page.evaluate(()=>({chips:[...document.querySelectorAll('.pool-chip')].map(x=>x.textContent),count:document.querySelector('.pool-picker-title span')?.textContent,hint:document.querySelector('.pool-picker small')?.textContent?.slice(0,80)}));
+await page.evaluate(()=>{const chips=[...document.querySelectorAll('.pool-chip')];chips.find(x=>x.textContent==='火属性')?.click();chips.find(x=>x.textContent==='第一赛季')?.click()});
+await new Promise(r=>setTimeout(r,200));
+const fireCount=await page.evaluate(()=>document.querySelector('.pool-picker-title span')?.textContent);
+await page.screenshot({path:'.verify/pool-picker-ui.png'});
+console.log(JSON.stringify({info,fireCount,errors},null,2));await browser.close();

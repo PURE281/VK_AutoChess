@@ -1,0 +1,34 @@
+{
+  "name": "valkyrie-autochess-fanwork",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently \"npm:dev:web\" \"npm:dev:pvp\"",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview --host 127.0.0.1",
+    "typecheck": "tsc --noEmit",
+    "dev:web": "vite --host 0.0.0.0",
+    "dev:pvp": "tsx watch server/pvp-server.ts",
+    "pvp:server": "tsx server/pvp-server.ts"
+  },
+  "dependencies": {
+    "@vitejs/plugin-react": "4.3.4",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "three": "^0.170.0",
+    "typescript": "5.6.3",
+    "vite": "5.4.11"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.1",
+    "@types/react": "18.3.12",
+    "@types/react-dom": "18.3.1",
+    "@types/three": "^0.170.0",
+    "@types/ws": "^8.5.13",
+    "concurrently": "^9.1.0",
+    "puppeteer-core": "^23.10.4",
+    "tsx": "^4.19.2",
+    "ws": "^8.18.0"
+  }
+}

@@ -1,0 +1,16 @@
+import puppeteer from 'puppeteer-core';
+const browser=await puppeteer.launch({executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true,args:['--disable-gpu','--no-sandbox','--enable-unsafe-swiftshader'],defaultViewport:{width:1000,height:850}});
+const page=await browser.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+await page.goto('http://127.0.0.1:5173/',{waitUntil:'networkidle2'});await page.waitForSelector('.mode-card.pve');await page.click('.mode-card.pve');await page.waitForSelector('.board-canvas');await sleep(800);
+const radius=async()=>page.evaluate(()=>window.__board3dDebug?.cameraRadius);
+const pos=await page.evaluate(()=>{const r=document.querySelector('.board-canvas').getBoundingClientRect();return {x:r.left+r.width/2,y:r.top+r.height/2}});
+await page.mouse.move(pos.x,pos.y);
+const initial=await radius();
+await page.mouse.wheel({deltaY:-1200});await sleep(150);
+const plain=await radius();
+await page.keyboard.down('Control');await page.mouse.wheel({deltaY:-1200});await page.keyboard.up('Control');await sleep(150);
+const ctrl=await radius();
+await page.click('.camera-reset-button');await sleep(150);
+const reset=await radius();
+const meta=await page.evaluate(()=>document.querySelector('meta[name=viewport]')?.content);
+console.log(JSON.stringify({initial,plain,ctrl,reset,plainUnchanged:plain===initial,ctrlZoomed:ctrl<initial,resetOk:Math.abs(reset-initial)<.01,meta,errors},null,2));await browser.close();

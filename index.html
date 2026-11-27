@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="theme-color" content="#090d18" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>女武神棋境 · Valkyrie Tactics</title>
+    <style>
+      .boot-splash{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#090d18;color:#9ed8ff;font-family:system-ui,sans-serif;gap:14px}
+      .boot-splash .rune{font-size:46px;color:#f6c65b;animation:boot-pulse 1.6s ease-in-out infinite}
+      .boot-splash .bar{width:min(320px,72vw);height:5px;border-radius:99px;background:rgba(148,163,184,.18);overflow:hidden}
+      .boot-splash .bar i{display:block;height:100%;width:40%;border-radius:99px;background:linear-gradient(90deg,#38bdf8,#f6c65b);animation:boot-slide 1.3s ease-in-out infinite}
+      .boot-splash small{color:#7b8ba1;letter-spacing:.12em}
+      @keyframes boot-slide{0%{transform:translateX(-110%)}100%{transform:translateX(280%)}}
+      @keyframes boot-pulse{0%,100%{opacity:.65;transform:scale(1)}50%{opacity:1;transform:scale(1.08)}}
+    </style>
+  </head>
+  <body>
+    <div id="root">
+      <div class="boot-splash">
+        <div class="rune">ᛟ</div>
+        <div class="bar"><i></i></div>
+        <small>女武神棋境正在启动…</small>
+      </div>
+    </div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

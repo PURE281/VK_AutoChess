@@ -1,0 +1,12 @@
+import puppeteer from 'puppeteer-core';
+const browser=await puppeteer.launch({executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true,args:['--disable-gpu','--no-sandbox','--enable-unsafe-swiftshader'],defaultViewport:{width:768,height:900}});
+const page=await browser.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+await page.goto('http://127.0.0.1:5173/',{waitUntil:'networkidle2'});await page.waitForSelector('.mode-card.pve');await page.click('.mode-card.pve');await page.waitForSelector('.shop-card:not(.empty)');await sleep(400);
+await page.evaluate(()=>document.querySelector('.shop-card:not(.empty)')?.click());await sleep(250);
+await page.evaluate(()=>document.querySelector('.bench-slot.filled')?.scrollIntoView({block:'center'}));await sleep(120);
+const before=await page.evaluate(()=>({selected:null,popup:Boolean(document.querySelector('.champion-info-modal'))}));
+const pos=await page.evaluate(()=>{const r=document.querySelector('.bench-slot.filled').getBoundingClientRect();return {x:r.left+r.width/2,y:r.top+r.height/2}});
+await page.mouse.move(pos.x,pos.y);await page.mouse.down();await sleep(720);await page.mouse.up();await sleep(220);
+const after=await page.evaluate(()=>({popup:Boolean(document.querySelector('.champion-info-modal')),title:document.querySelector('.champion-info-modal h3')?.textContent,selected:Boolean(document.querySelector('.bench-slot.selected'))}));
+const h1=await page.evaluate(()=>document.querySelector('.board-canvas-wrap').getBoundingClientRect().height);await sleep(1800);const h2=await page.evaluate(()=>document.querySelector('.board-canvas-wrap').getBoundingClientRect().height);
+console.log(JSON.stringify({before,after,h1,h2,growth:h2-h1,errors},null,2));await browser.close();
