@@ -1,0 +1,16 @@
+import puppeteer from 'puppeteer-core';
+const browser=await puppeteer.launch({executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true,args:['--disable-gpu','--no-sandbox','--enable-unsafe-swiftshader']});
+const page=await browser.newPage();
+await page.setViewport({width:390,height:844,isMobile:true,hasTouch:true,deviceScaleFactor:2});
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+await page.goto('http://127.0.0.1:5173/',{waitUntil:'networkidle2',timeout:40000});
+await sleep(2000);
+await page.evaluate(()=>{localStorage.setItem('vc_fan_notice_agreed','1');document.querySelector('.fan-notice-agree')?.click()});
+await page.waitForSelector('.mode-card.pve',{timeout:15000});
+await page.screenshot({path:'.verify/mobile-05-lobby-portrait.png'});
+await page.click('.mode-card.pve');
+await page.waitForSelector('.board-canvas',{timeout:15000});
+await sleep(1800);
+await page.screenshot({path:'.verify/mobile-06-game-portrait.png'});
+console.log('done');
+await browser.close();

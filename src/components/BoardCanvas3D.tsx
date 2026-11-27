@@ -434,17 +434,35 @@ export default function BoardCanvas3D({ store, state, selected, onLocationClick,
     let pressTimer = 0;
     let pressX = 0;
     let pressY = 0;
+    // Multi-touch pinch zoom: track every active pointer so a second finger can
+    // switch the gesture from rotate-drag into pinch without jittering the camera.
+    const activePointers = new Map<number, { x: number; y: number }>();
+    let pinchDistance = 0;
     const clearPressTimer = () => {
       if (pressTimer) window.clearTimeout(pressTimer);
       pressTimer = 0;
     };
+    const pinchGap = () => {
+      const pts = Array.from(activePointers.values());
+      if (pts.length < 2) return 0;
+      return Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+    };
     const pointerDown = (event: PointerEvent) => {
       if (event.button !== 0 && event.button !== 1 && event.button !== 2) return;
+      activePointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+      if (activePointers.size >= 2) {
+        clearPressTimer();
+        orbit.dragging = false;
+        orbit.moved = true;
+        pinchDistance = pinchGap();
+        try { canvas.setPointerCapture?.(event.pointerId); } catch { /* synthetic or stale pointer */ }
+        return;
+      }
       orbit.dragging = true;
       orbit.moved = false;
       orbit.lastX = event.clientX;
       orbit.lastY = event.clientY;
-      canvas.setPointerCapture?.(event.pointerId);
+      try { canvas.setPointerCapture?.(event.pointerId); } catch { /* synthetic or stale pointer */ }
       pressX = event.clientX;
       pressY = event.clientY;
       clearPressTimer();
@@ -468,7 +486,18 @@ export default function BoardCanvas3D({ store, state, selected, onLocationClick,
       }, 540);
     };
     const pointerMove = (event: PointerEvent) => {
+      if (activePointers.has(event.pointerId)) activePointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
       if (Math.hypot(event.clientX - pressX, event.clientY - pressY) > 12) clearPressTimer();
+      if (activePointers.size >= 2) {
+        orbit.moved = true;
+        const gap = pinchGap();
+        if (pinchDistance > 0 && gap > 0) {
+          orbit.radius = Math.max(8.2, Math.min(17.5, orbit.radius * (pinchDistance / gap)));
+          updateCamera();
+        }
+        pinchDistance = gap;
+        return;
+      }
       if (!orbit.dragging) return;
       const dx = event.clientX - orbit.lastX;
       const dy = event.clientY - orbit.lastY;
@@ -481,7 +510,17 @@ export default function BoardCanvas3D({ store, state, selected, onLocationClick,
     };
     const pointerUp = (event: PointerEvent) => {
       clearPressTimer();
+      activePointers.delete(event.pointerId);
+      pinchDistance = 0;
       orbit.dragging = false;
+      // Re-anchor the rotate baseline onto the remaining finger so lifting one
+      // hand does not make the camera jump on the next move event.
+      if (activePointers.size === 1) {
+        const rest = Array.from(activePointers.values())[0];
+        orbit.lastX = rest.x;
+        orbit.lastY = rest.y;
+        orbit.dragging = true;
+      }
       try { canvas.releasePointerCapture?.(event.pointerId); } catch { /* noop */ }
     };
     const wheel = (event: WheelEvent) => {

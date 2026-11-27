@@ -1,4 +1,5 @@
 import { Suspense, lazy, useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
+import type { ReactNode } from "react";
 import type { DataStore } from "./data";
 import { loadGameData } from "./data";
 import type { LoadProgress } from "./data";
@@ -21,6 +22,7 @@ import { sound } from "./sound";
 import Lobby from "./components/Lobby";
 import Codex from "./components/Codex";
 import OnlineScreen from "./components/OnlineScreen";
+import FanNotice from "./components/FanNotice";
 import { useBoardVoices } from "./hooks/useBoardVoices";
 import { useImmersiveDrawers } from "./hooks/useImmersiveDrawers";
 
@@ -262,6 +264,8 @@ function GameApp({ store, mode, onExit }: { store: DataStore; mode: GameMode; on
   );
 }
 
+const FAN_NOTICE_KEY = "vc_fan_notice_agreed";
+
 export default function App() {
   const [store, setStore] = useState<DataStore | null>(null);
   const [error, setError] = useState<string>("");
@@ -269,6 +273,9 @@ export default function App() {
   const [screen, setScreen] = useState<"lobby" | "codex" | "game" | "online">("lobby");
   const [mode, setMode] = useState<GameMode>("pvp");
   const [runId, setRunId] = useState(0);
+  const [noticeAgreed, setNoticeAgreed] = useState(() => {
+    try { return localStorage.getItem(FAN_NOTICE_KEY) === "1"; } catch { return false; }
+  });
   useEffect(() => {
     let alive = true;
     loadGameData((progress) => {
@@ -284,13 +291,15 @@ export default function App() {
       alive = false;
     };
   }, []);
-  if (!store) return <LoadingScreen error={error} progress={loadProgress} />;
   const goLobby = () => {
     sound.bgm("bgm_home");
     setScreen("lobby");
   };
-  if (screen === "lobby") {
-    return (
+  let content: ReactNode;
+  if (!store) {
+    content = <LoadingScreen error={error} progress={loadProgress} />;
+  } else if (screen === "lobby") {
+    content = (
       <Lobby
         store={store}
         onCodex={() => setScreen("codex")}
@@ -302,8 +311,24 @@ export default function App() {
         }}
       />
     );
+  } else if (screen === "codex") {
+    content = <Codex store={store} onBack={goLobby} />;
+  } else if (screen === "online") {
+    content = <OnlineScreen store={store} onExit={goLobby} />;
+  } else {
+    content = <GameApp key={`${mode}-${runId}`} store={store} mode={mode} onExit={goLobby} />;
   }
-  if (screen === "codex") return <Codex store={store} onBack={goLobby} />;
-  if (screen === "online") return <OnlineScreen store={store} onExit={goLobby} />;
-  return <GameApp key={`${mode}-${runId}`} store={store} mode={mode} onExit={goLobby} />;
+  return (
+    <>
+      {content}
+      {!noticeAgreed && (
+        <FanNotice
+          onAgree={() => {
+            try { localStorage.setItem(FAN_NOTICE_KEY, "1"); } catch { /* storage unavailable */ }
+            setNoticeAgreed(true);
+          }}
+        />
+      )}
+    </>
+  );
 }
