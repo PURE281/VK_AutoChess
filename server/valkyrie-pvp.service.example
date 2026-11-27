@@ -1,6 +1,6 @@
 # systemd unit for the PVP WebSocket server.
 # Copy to /etc/systemd/system/valkyrie-pvp.service, adjust paths/user, then:
-# (clone location in this project: /war/www/VK_AutoChess)
+# (clone location in this project: /var/www/VK_AutoChess)
 #   systemctl daemon-reload
 #   systemctl enable --now valkyrie-pvp
 
@@ -11,7 +11,7 @@ After=network.target
 [Service]
 Type=simple
 User=valkyrie
-WorkingDirectory=/war/www/VK_AutoChess
+WorkingDirectory=/var/www/VK_AutoChess
 ExecStart=/usr/bin/npx tsx server/pvp-server.ts
 Restart=always
 RestartSec=3

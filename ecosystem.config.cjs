@@ -9,7 +9,9 @@ module.exports = {
       script: "server/pvp-server.ts",
       interpreter: "node",
       interpreter_args: "--import tsx",
-      cwd: "/war/www/VK_AutoChess",
+      // Resolve to whatever directory this file lives in, so the config works
+      // no matter where the repo is cloned (/var/www, /opt, home dir, ...).
+      cwd: __dirname,
       env: {
         NODE_ENV: "production",
         PVP_PORT: "8787",
