@@ -76,3 +76,7 @@ Before considering gameplay or rendering changes complete:
 
 - Initial roster download uses streaming fetch in `loadGameData(onProgress)`; `LoadingScreen` shows percent, bytes and ETA. The static boot splash in `index.html` covers the JS bundle download before React mounts.
 - GLB downloads are tracked by `src/hooks/useModelLoadProgress.ts` (`modelLoadTracker`); `BoardCanvas3D` reports begin/progress/end and renders the `.model-load-badge` overlay. When extending asset loading, reuse the tracker rather than adding parallel indicators.
+## Git Workflow
+
+- The project is version controlled at `https://github.com/PURE281/VK_AutoChess.git` (branch `main`). Commit completed work with the standard Devin commit format and push when the user asks.
+- `public/assets/`, `.cache/`, `.tools/`, `node_modules/`, `dist/` and verification artifacts are intentionally untracked; do not force-add them. `.verify` keeps only `*.ts`/`*.mjs` test sources.
