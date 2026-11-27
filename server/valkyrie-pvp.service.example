@@ -1,0 +1,21 @@
+# systemd unit for the PVP WebSocket server.
+# Copy to /etc/systemd/system/valkyrie-pvp.service, adjust paths/user, then:
+#   systemctl daemon-reload
+#   systemctl enable --now valkyrie-pvp
+
+[Unit]
+Description=Valkyrie AutoChess PVP WebSocket server
+After=network.target
+
+[Service]
+Type=simple
+User=valkyrie
+WorkingDirectory=/opt/VK_AutoChess
+ExecStart=/usr/bin/npx tsx server/pvp-server.ts
+Restart=always
+RestartSec=3
+Environment=NODE_ENV=production
+Environment=PVP_PORT=8787
+
+[Install]
+WantedBy=multi-user.target

@@ -59,3 +59,15 @@ node .verify/pvp-browser-test.mjs    # 双浏览器联机端到端
 - **资源**：模型/立绘/音频托管在 Cloudflare R2 公共桶，前端默认从 R2 加载；本地开发如需离线资源，在 `.env.local` 写 `VITE_ASSET_BASE=local`。
 - **资源同步**：`python tools/upload_r2.py`（凭据放在 `.env.local`，见 `.env.example`）。
 - **联机服务器**：静态托管不包含 WebSocket PVP 服务，联机模式需自行运行 `npm run pvp:server`。
+
+## 公网联机（可选）
+
+GitHub Pages 是纯静态托管，联机 WebSocket 服务器需要自行部署（普通 VPS + nginx 即可）：
+
+1. 服务器上 `git clone` 本仓库并 `npm ci`（`public/data/roster.json` 已入库，无需下载大资源）；
+2. 用 systemd 运行 `npx tsx server/pvp-server.ts`（模板：`server/valkyrie-pvp.service.example`），或 `pm2 start npx -- tsx server/pvp-server.ts`；
+3. nginx 反代 127.0.0.1:8787 并配置 WebSocket Upgrade 头与 TLS 证书（模板：`server/nginx-pvp.conf.example`）。**必须 wss**：页面是 HTTPS，浏览器会拦截明文 ws://；
+4. 在仓库 Settings → Secrets and variables → Actions → **Variables** 添加 `PVP_WS_URL=wss://ws.你的域名`，重新部署即可让前端默认连接该服务器；
+5. 也可以不改配置：联机界面里有"服务器地址"输入框，玩家手动填写一次后会记住。
+
+WebSocket 不受浏览器 CORS 限制，无需额外跨域配置。

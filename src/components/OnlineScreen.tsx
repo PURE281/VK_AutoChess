@@ -55,7 +55,19 @@ interface OnlineScreenProps {
   onExit: () => void;
 }
 
+function normalizeServerUrl(raw: string): string {
+  const trimmed = raw.trim();
+  if (!trimmed) return "";
+  if (/^wss?:\/\//.test(trimmed)) return trimmed;
+  const protocol = window.location.protocol === "https:" ? "wss" : "ws";
+  return `${protocol}://${trimmed}`;
+}
+
 function serverUrl(): string {
+  const custom = normalizeServerUrl(window.localStorage.getItem("valkyrie-pvp-server") ?? "");
+  if (custom) return custom;
+  const envUrl = normalizeServerUrl((import.meta.env.VITE_PVP_WS_URL as string | undefined) ?? "");
+  if (envUrl) return envUrl;
   const protocol = window.location.protocol === "https:" ? "wss" : "ws";
   return `${protocol}://${window.location.hostname}:8787`;
 }
@@ -65,6 +77,7 @@ export default function OnlineScreen({ store, onExit }: OnlineScreenProps) {
   const [connected, setConnected] = useState(false);
   const [packet, setPacket] = useState<OnlinePacket | null>(null);
   const [error, setError] = useState("");
+  const [serverAddr, setServerAddr] = useState(() => window.localStorage.getItem("valkyrie-pvp-server") ?? "");
   const [name, setName] = useState(() => window.localStorage.getItem("valkyrie-pvp-name") ?? "");
   const [code, setCode] = useState("");
   const [selectedPoolGroups, setSelectedPoolGroups] = useState<PoolGroupId[]>(["season1"]);
@@ -150,6 +163,16 @@ export default function OnlineScreen({ store, onExit }: OnlineScreenProps) {
             ))}
             <small>分类规则来自原版图鉴的作品/系列：同一动漫联动为一类，原作角色按本家经典、异端者、反叛者、观测者等称号系列分类。多个分类取并集；池内仍保留完整的属性、种族和职业多样性。人数太少会难以升星，建议 80 名以上。</small>
           </div>
+          <label className="server-addr-label">服务器地址<span className="server-addr-hint">留空则自动：局域网用本机地址，公网用部署时配置的地址</span>
+            <input
+              value={serverAddr}
+              placeholder="例如 ws.example.com 或 wss://ws.example.com"
+              onChange={(e) => {
+                setServerAddr(e.target.value);
+                window.localStorage.setItem("valkyrie-pvp-server", e.target.value);
+              }}
+            />
+          </label>
           <div className="online-actions">
             <button className="primary-button" onClick={create}>创建房间</button>
             <div className="join-row">
@@ -158,7 +181,7 @@ export default function OnlineScreen({ store, onExit }: OnlineScreenProps) {
             </div>
           </div>
           {error && <div className="online-error">{error}</div>}
-          <div className="online-hint">服务器状态：{connected ? "已连接" : "未连接"} · 局域网设备请使用主机局域网 IP 访问本页面</div>
+          <div className="online-hint">服务器状态：{connected ? "已连接" : "未连接"} · 当前服务器 {serverUrl()}</div>
           <button className="ghost-button compact" onClick={onExit}>返回大厅</button>
         </div>
       </div>

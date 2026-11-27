@@ -765,6 +765,10 @@ button:disabled { cursor: not-allowed; opacity: 0.48; }
 .online-actions { display: grid; gap: 12px; }
 .join-row { display: grid; grid-template-columns: 1fr auto; gap: 10px; }
 .join-row input { text-transform: uppercase; letter-spacing: .18em; font-weight: 900; text-align: center; }
+
+.server-addr-label { display: flex; flex-direction: column; gap: 5px; margin-top: 10px; color: #9fb1c9; font-size: 11px; }
+.server-addr-hint { color: #64748b; font-size: 9px; }
+
 .online-error { margin-top: 14px; padding: 11px 13px; border-radius: 12px; color: #fecaca; background: rgba(127,29,29,.28); border: 1px solid rgba(248,113,113,.3); }
 .online-hint { margin: 15px 0; color: var(--muted); font-size: 12px; line-height: 1.6; }
 .room-code {
