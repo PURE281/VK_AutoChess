@@ -1,0 +1,14 @@
+import puppeteer from 'puppeteer-core';
+const browser=await puppeteer.launch({executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true,args:['--disable-gpu','--no-sandbox','--enable-unsafe-swiftshader']});
+const page=await browser.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message.slice(0,100)));
+await page.setViewport({width:844,height:390,isMobile:true,hasTouch:true,deviceScaleFactor:2});
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+await page.goto('https://pure281.github.io/VK_AutoChess/',{waitUntil:'networkidle2',timeout:45000});
+await sleep(2500);
+const notice=await page.evaluate(()=>Boolean(document.querySelector('.fan-notice-card')));
+await page.screenshot({path:'.verify/pages-redesign-mobile.png'});
+await page.evaluate(()=>document.querySelector('.fan-notice-agree')?.click());
+await page.waitForSelector('.mode-card.pve',{timeout:15000}).catch(()=>null);
+const lobby=await page.evaluate(()=>document.querySelectorAll('.mode-card').length);
+console.log(JSON.stringify({noticeOnMobile:notice,lobbyCards:lobby,errors:errors.slice(0,4)}));
+await browser.close();

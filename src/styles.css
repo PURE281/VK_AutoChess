@@ -747,14 +747,14 @@ button:disabled { cursor: not-allowed; opacity: 0.48; }
 .online-screen {
   height: 100%; min-width: 1080px; display: grid; place-items: center;
   background:
-    radial-gradient(circle at 72% 18%, rgba(232, 194, 106, .17), transparent 34%),
-    radial-gradient(circle at 20% 80%, rgba(167, 139, 250, .13), transparent 32%),
-    #070b14;
+    radial-gradient(circle at 50% -8%, rgba(240, 178, 74, .16), transparent 42%),
+    radial-gradient(circle at 20% 82%, rgba(170, 106, 32, .10), transparent 34%),
+    linear-gradient(150deg, #0d0906, #181008 55%, #0e0a06);
 }
 .online-card {
   width: min(620px, 90vw); padding: 36px; border-radius: 26px;
-  border: 1px solid rgba(232, 194, 106,.24); background: linear-gradient(155deg, rgba(15,27,50,.92), rgba(7,12,24,.9));
-  box-shadow: 0 28px 90px rgba(0,0,0,.42), inset 0 1px 0 rgba(255,255,255,.04);
+  border: 1px solid rgba(232, 194, 106,.30); background: linear-gradient(155deg, rgba(38,28,15,.94), rgba(19,13,7,.92));
+  box-shadow: 0 28px 90px rgba(0,0,0,.46), inset 0 1px 0 rgba(255,226,160,.09);
 }
 .online-card h1 { margin: 8px 0 10px; font-size: 36px; letter-spacing: 3px; }
 .online-card p { color: #b3a78d; line-height: 1.75; }
@@ -782,7 +782,7 @@ button:disabled { cursor: not-allowed; opacity: 0.48; }
 .online-status-strip {
   height: 32px; flex: 0 0 32px; display: flex; align-items: center; justify-content: center; gap: 28px;
   color: #b3a78d; font-size: 12px; border-bottom: 1px solid rgba(170, 152, 118,.12);
-  background: rgba(4,8,17,.72);
+  background: rgba(16,11,6,.74);
 }
 .online-status-strip strong { color: #f7ecd4; }
 .online-game-shell .game-layout { height: calc(100% - 108px); flex: 1; }
@@ -983,7 +983,7 @@ button, .shop-card, .bench-slot { touch-action: manipulation; }
   flex: 1;
   min-height: 0;
   overflow: hidden;
-  background: #060b13;
+  background: #0e0a06;
 }
 .battle-shell > .board-canvas-wrap {
   position: absolute;
@@ -1003,7 +1003,7 @@ button, .shop-card, .bench-slot { touch-action: manipulation; }
   z-index: 42;
   border: 1px solid rgba(232, 194, 106, .34);
   color: #f7ecd4;
-  background: rgba(5, 12, 24, .72);
+  background: rgba(18, 12, 6, .74);
   backdrop-filter: blur(9px);
   box-shadow: 0 8px 24px rgba(0,0,0,.3);
   font-size: 12px;
@@ -1073,7 +1073,7 @@ button, .shop-card, .bench-slot { touch-action: manipulation; }
   padding: 7px 10px;
   border: 1px solid rgba(232, 194, 106,.18);
   border-radius: 17px;
-  background: linear-gradient(180deg, rgba(11,18,34,.88), rgba(20, 15, 9,.76));
+  background: linear-gradient(180deg, rgba(43,31,16,.92), rgba(22,15,8,.82));
   backdrop-filter: blur(10px);
   overflow-x: auto;
   overflow-y: hidden;
@@ -1089,7 +1089,7 @@ button, .shop-card, .bench-slot { touch-action: manipulation; }
   margin: 0 0 5px;
   padding: 3px 10px;
   border-radius: 11px;
-  background: rgba(5,12,24,.66);
+  background: rgba(18,12,6,.68);
   backdrop-filter: blur(8px);
   overflow: hidden;
   white-space: nowrap;
@@ -1103,7 +1103,7 @@ button, .shop-card, .bench-slot { touch-action: manipulation; }
   transform: translateY(calc(100% + 18px));
   border: 1px solid rgba(232, 194, 106,.16);
   border-radius: 20px;
-  background: rgba(5, 12, 24, .68);
+  background: rgba(18, 12, 6, .70);
   backdrop-filter: blur(11px);
   overflow: hidden;
 }
@@ -1117,7 +1117,7 @@ button, .shop-card, .bench-slot { touch-action: manipulation; }
   padding: 10px;
 }
 .bottom-drawer .bench-column { grid-template-rows: minmax(0, 1fr) auto; gap: 8px; }
-.bottom-drawer .panel { background: linear-gradient(180deg, rgba(18,27,48,.9), rgba(9,15,29,.86)); }
+.bottom-drawer .panel { background: linear-gradient(180deg, rgba(36,27,15,.92), rgba(19,13,8,.88)); }
 .bottom-drawer .shop-header { min-height: 68px; }
 .bottom-drawer .shop-cards { grid-template-columns: repeat(5, minmax(72px, 1fr)); }
 .bottom-drawer .shop-card-top { width: 52px; height: 52px; }
@@ -1135,7 +1135,7 @@ button, .shop-card, .bench-slot { touch-action: manipulation; }
 .battle-shell.bottom-open .left-drawer,
 .battle-shell.bottom-open .right-drawer { bottom: 310px; }
 .drawer-panel .panel {
-  background: linear-gradient(180deg, rgba(18,27,48,.93), rgba(9,15,29,.9));
+  background: linear-gradient(180deg, rgba(36,27,15,.95), rgba(19,13,8,.92));
   backdrop-filter: blur(10px);
 }
 
@@ -1152,7 +1152,7 @@ button, .shop-card, .bench-slot { touch-action: manipulation; }
 .combat-stats-float .combat-stats-panel {
   width: 100%;
   max-height: 100%;
-  background: linear-gradient(180deg, rgba(18,27,48,.82), rgba(9,15,29,.74));
+  background: linear-gradient(180deg, rgba(36,27,15,.85), rgba(19,13,8,.78));
   backdrop-filter: blur(9px);
 }
 .combat-stats-float .damage-summary { grid-template-columns: repeat(2, 1fr); padding: 7px 8px; }
@@ -1319,4 +1319,39 @@ button, .shop-card, .bench-slot { touch-action: manipulation; }
   .battle-shell.bottom-open .drawer-tab-top {
     left: calc((100vw - min(472px, 57vw) - 24px) / 2);
   }
+}
+
+/* Online lobby mobile responsiveness */
+@media (max-width: 1180px) {
+  .online-screen { min-width: 0; height: auto; min-height: 100vh; padding: 18px 12px; overflow-y: auto; }
+  .online-card { width: min(620px, 100%); padding: 24px 18px; }
+}
+@media (max-width: 620px) {
+  .online-card h1 { font-size: 27px; letter-spacing: 2px; }
+  .online-card p { font-size: 13px; line-height: 1.65; }
+  .room-code { font-size: 32px; padding: 10px 18px; letter-spacing: .18em; }
+  .join-row { grid-template-columns: 1fr; }
+  .pool-picker-row { gap: 5px; }
+  .pool-chip { font-size: 11px; padding: 5px 8px; }
+}
+@media (max-height: 560px) {
+  .online-screen { align-items: start; padding: 10px; }
+  .online-card { padding: 18px 16px; }
+  .online-card h1 { font-size: 24px; margin: 4px 0 6px; }
+  .online-card p { font-size: 12.5px; line-height: 1.55; margin: 6px 0; }
+  .online-card label { margin: 10px 0 8px; }
+  .online-card input { height: 40px; }
+  .pool-picker { margin: 10px 0; padding: 10px; }
+  .room-code { font-size: 28px; margin: 12px auto; padding: 8px 16px; }
+  .online-hint { margin: 10px 0; }
+}
+
+/* Online status strip: compress on small screens so room/opponent/ready state
+   stays readable inside the narrow landscape top drawer. */
+@media (max-width: 920px) {
+  .top-drawer .online-status-strip { gap: 12px; font-size: 11px; padding: 0 8px; }
+}
+@media (max-width: 620px) {
+  .top-drawer .online-status-strip { gap: 8px; font-size: 10px; }
+  .top-drawer .online-status-strip .planning-countdown { white-space: nowrap; }
 }
