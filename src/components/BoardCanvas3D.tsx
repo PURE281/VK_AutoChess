@@ -305,6 +305,25 @@ export default function BoardCanvas3D({ store, state, selected, onLocationClick,
         }
       });
       if (headY > 0.05) visual.barHeight = Math.max(1.02, Math.min(2.25, headY + 0.24));
+      // Some prefabs ship disabled costume-variant shells that share the "body"
+      // node name. The conversion exports every mesh, so the variant shell ends up
+      // overlapping the real head with garbage UVs (visible as texture patchwork
+      // on the face). Keep the highest-vertex "body" mesh and hide the rest.
+      const bodyMeshes: any[] = [];
+      model.traverse((obj: any) => {
+        if ((obj.isMesh || obj.isSkinnedMesh) && obj.material?.name !== "face_m" && (obj.name === "body" || obj.parent?.name === "body")) {
+          bodyMeshes.push(obj);
+        }
+      });
+      if (bodyMeshes.length > 1) {
+        const vertCount = (m: any) => m.geometry?.attributes?.position?.count ?? 0;
+        // Multi-primitive bodies split into several child meshes that belong together;
+        // only hide a mesh when it is tiny compared to the largest same-name mesh.
+        const maxVerts = Math.max(...bodyMeshes.map(vertCount));
+        for (const m of bodyMeshes) {
+          if (vertCount(m) < maxVerts * 0.2) m.visible = false;
+        }
+      }
       model.traverse((obj: any) => {
         if (obj.isMesh || obj.isSkinnedMesh) {
           obj.castShadow = true;
