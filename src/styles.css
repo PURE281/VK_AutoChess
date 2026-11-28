@@ -1355,3 +1355,44 @@ button, .shop-card, .bench-slot { touch-action: manipulation; }
   .top-drawer .online-status-strip { gap: 8px; font-size: 10px; }
   .top-drawer .online-status-strip .planning-countdown { white-space: nowrap; }
 }
+
+/* Cosmetic skin picker in the detail panel */
+.skin-picker {
+  margin: 8px 0 4px;
+}
+.skin-picker .section-label {
+  font-size: 11px;
+  color: #b98f4e;
+  letter-spacing: 0.5px;
+}
+.skin-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+.skin-option {
+  width: 44px;
+  height: 44px;
+  padding: 2px;
+  border-radius: 8px;
+  border: 1px solid rgba(185, 143, 78, 0.35);
+  background: rgba(30, 22, 14, 0.6);
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+}
+.skin-option img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 6px;
+  display: block;
+}
+.skin-option:hover {
+  border-color: rgba(232, 190, 106, 0.8);
+  transform: translateY(-1px);
+}
+.skin-option.active {
+  border-color: #e8be6a;
+  box-shadow: 0 0 8px rgba(232, 190, 106, 0.55);
+}

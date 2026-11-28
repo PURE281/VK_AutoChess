@@ -1,0 +1,10 @@
+import puppeteer from 'puppeteer-core';
+const browser=await puppeteer.launch({executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true,args:['--disable-gpu','--no-sandbox','--enable-unsafe-swiftshader'],defaultViewport:{width:600,height:600}});
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const page=await browser.newPage();
+await page.goto('http://127.0.0.1:5173/glbtest.html?m=103018.glb&d=3.5',{waitUntil:'networkidle2',timeout:30000});
+await sleep(2800);
+const meshes=await page.evaluate(()=>window.__meshes);
+console.log(JSON.stringify(meshes));
+await page.screenshot({path:'.verify/now-103018.png'});
+await browser.close();

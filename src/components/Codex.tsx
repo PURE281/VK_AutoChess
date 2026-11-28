@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import type { Champion } from "../types";
 import type { DataStore } from "../data";
 import { assetUrl, className, elementNames, raceColor, raceName, roleColor, roleName } from "../data";
+import { costumeOptions, getSkin, setSkin } from "../skins";
 import { sound } from "../sound";
 
 function clean(value: string | undefined): string {
@@ -24,6 +25,7 @@ export default function Codex({ store, onBack }: CodexProps) {
   const [cost, setCost] = useState("all");
   const [element, setElement] = useState("all");
   const [selectedId, setSelectedId] = useState(store.dataset.characters[0]?.id ?? 0);
+  const [, setSkinTick] = useState(0);
 
   const races = Object.entries(store.dataset.constants.races).filter(([id]) => store.dataset.characters.some((c) => String(c.race) === id));
   const roles = Object.entries(store.dataset.constants.roles).filter(([id]) => store.dataset.characters.some((c) => c.role === id));
@@ -96,7 +98,7 @@ export default function Codex({ store, onBack }: CodexProps) {
         {selected && (
           <aside className="codex-detail">
             <div className="codex-portrait-frame">
-              <img src={assetUrl(selected.assets.standing || selected.assets.icon)} alt={selected.name} draggable={false} decoding="async" />
+              <img src={assetUrl((store.champions.get(getSkin(store.costumes, selected.id)) ?? selected).assets.standing || selected.assets.icon)} alt={selected.name} draggable={false} decoding="async" />
               <div className="portrait-shade" />
               <div className="codex-title-block">
                 <span>{selected.cost} 费 · {className(store, selected.classType)} · 射程 {selected.range}</span>
@@ -109,6 +111,35 @@ export default function Codex({ store, onBack }: CodexProps) {
               <span style={{ borderColor: roleColor(store, selected.role), color: roleColor(store, selected.role) }}>{roleName(store, selected.role)}</span>
               {elementNames(store, selected.elementMask).map((name) => <span key={name}>{name}</span>)}
             </div>
+            {(() => {
+              const options = costumeOptions(store.costumes, selected.id);
+              if (options.length < 2) return null;
+              const active = getSkin(store.costumes, selected.id);
+              return (
+                <section className="codex-section skin-picker-section">
+                  <div className="section-title"><span>外观</span><em>纯皮肤 · 不影响数值</em></div>
+                  <div className="skin-options">
+                    {options.map((cid) => {
+                      const skinChampion = store.champions.get(cid);
+                      if (!skinChampion) return null;
+                      return (
+                        <button
+                          key={cid}
+                          className={`skin-option${cid === active ? " active" : ""}`}
+                          title={skinChampion.name}
+                          onClick={() => {
+                            setSkin(store.costumes, selected.id, cid);
+                            setSkinTick((v) => v + 1);
+                          }}
+                        >
+                          <img src={assetUrl(skinChampion.assets.icon)} alt={skinChampion.name} draggable={false} />
+                        </button>
+                      );
+                    })}
+                  </div>
+                </section>
+              );
+            })()}
             <section className="codex-section skill-section">
               <div className="section-title"><span>技能</span><strong>{selected.skill.name}</strong></div>
               <p>{clean(selected.skill.description) || clean(selected.skill.characterDetail) || "暂无技能描述。"}</p>

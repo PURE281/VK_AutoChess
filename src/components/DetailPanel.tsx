@@ -1,9 +1,11 @@
+import { useState } from "react";
 import type { GameAction } from "../game/engine";
 import type { Champion, LocationRef, PlayerState } from "../types";
 import type { DataStore } from "../data";
 import { assetUrl, className, elementNames, raceColor, raceName, roleColor, roleName } from "../data";
 import { itemById } from "../game/definitions";
 import { deployLimit, firstEmptyBench, firstEmptyBoard, getUnitAt, sellValue, starProgress } from "../game/roster";
+import { costumeOptions, getSkin, setSkin } from "../skins";
 
 interface DetailPanelProps {
   store: DataStore;
@@ -20,6 +22,7 @@ function pct(value: number): string {
 }
 
 export default function DetailPanel({ store, player, selected, inspectedChampionId, inspectedItemId, dispatch, clearSelection }: DetailPanelProps) {
+  const [, setSkinTick] = useState(0);
   const selectedUnit = selected ? getUnitAt(player, selected) : null;
   const selectedChampion = selectedUnit ? store.champions.get(selectedUnit.championId) : null;
   const inspectedChampion = inspectedChampionId != null ? store.champions.get(inspectedChampionId) : null;
@@ -95,7 +98,7 @@ export default function DetailPanel({ store, player, selected, inspectedChampion
       </div>
       <div className="detail-hero">
         <div className="standing-frame">
-          <img src={assetUrl(champion.assets.standing)} alt={champion.name} draggable={false} />
+          <img src={assetUrl((store.champions.get(getSkin(store.costumes, champion.id)) ?? champion).assets.standing)} alt={champion.name} draggable={false} />
         </div>
         <div className="detail-heading">
           <h3>{champion.name}</h3>
@@ -108,6 +111,36 @@ export default function DetailPanel({ store, player, selected, inspectedChampion
           <div className={`cost-large cost-${champion.cost}`}>{champion.cost} 费</div>
         </div>
       </div>
+
+      {(() => {
+        const options = costumeOptions(store.costumes, champion.id);
+        if (options.length < 2) return null;
+        const active = getSkin(store.costumes, champion.id);
+        return (
+          <div className="skin-picker">
+            <span className="section-label">外观（纯皮肤，不影响数值）</span>
+            <div className="skin-options">
+              {options.map((cid) => {
+                const skinChampion = store.champions.get(cid);
+                if (!skinChampion) return null;
+                return (
+                  <button
+                    key={cid}
+                    className={`skin-option${cid === active ? " active" : ""}`}
+                    title={skinChampion.name}
+                    onClick={() => {
+                      setSkin(store.costumes, champion.id, cid);
+                      setSkinTick((v) => v + 1);
+                    }}
+                  >
+                    <img src={assetUrl(skinChampion.assets.icon)} alt={skinChampion.name} draggable={false} />
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })()}
 
       <div className="skill-card">
         <div className="skill-title"><span>必杀技</span><strong>{champion.skill.name}</strong></div>

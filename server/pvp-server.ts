@@ -20,6 +20,7 @@ const store: DataStore = {
   dataset,
   champions,
   season1: dataset.seasons.season1.map((id) => champions.get(id)).filter((c): c is Champion => Boolean(c)),
+  costumes: { version: 1, groups: {}, byUnit: {} },
 };
 const reducer = createGameReducer(store);
 

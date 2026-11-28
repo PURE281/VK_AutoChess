@@ -7,6 +7,7 @@ import type { Champion, CombatResult, CombatUnitSnapshot, GameState, LocationRef
 import type { DataStore } from "../data";
 import { assetUrl } from "../data";
 import { deployLimit } from "../game/roster";
+import { getSkin, onSkinChange } from "../skins";
 import { sound } from "../sound";
 
 interface Props {
@@ -44,6 +45,9 @@ type UnitVisual = {
   snapFacing?: boolean;
   modelReady: boolean;
   celebrateUntil?: number;
+  skinId?: number;
+  portrait?: THREE.Object3D;
+  modelRoot?: THREE.Object3D;
 };
 
 function interpUnits(result: CombatResult, time: number): CombatUnitSnapshot[] {
@@ -272,6 +276,10 @@ export default function BoardCanvas3D({ store, state, selected, onLocationClick,
   const attachModel = useCallback((visual: UnitVisual, champion: Champion | undefined) => {
     if (!champion) return;
     const t = threeRef.current;
+    // Cosmetic skins only swap the GLB; the portrait card keeps the unit's own
+    // icon so bench/shop identity stays readable.
+    const skinId = getSkin(store.costumes, champion.id);
+    visual.skinId = skinId;
     // Portrait fallback is visible immediately and remains as a small aura card if the GLB is absent.
     const texture = t.textureLoader.load(assetUrl(champion.assets.icon));
     texture.colorSpace = THREE.SRGBColorSpace;
@@ -282,10 +290,12 @@ export default function BoardCanvas3D({ store, state, selected, onLocationClick,
     portrait.position.y = 0.58;
     portrait.rotation.x = -0.18;
     visual.group.add(portrait);
+    visual.portrait = portrait;
 
-    void loadModel(champion.id).then((gltf) => {
+    void loadModel(skinId).then((gltf) => {
       if (!gltf || !visual.group.parent) return;
       visual.group.remove(portrait);
+      if (visual.portrait === portrait) visual.portrait = undefined;
       const model = cloneSkinned(gltf.scene);
       // The source game uses one consistent world-unit scale across its humanoid rigs.
       // Bounding boxes of exported skinned meshes are unreliable because several rigs
@@ -332,6 +342,7 @@ export default function BoardCanvas3D({ store, state, selected, onLocationClick,
         }
       });
       visual.group.add(model);
+      visual.modelRoot = model;
       visual.mixer = new THREE.AnimationMixer(model);
       const actions: Record<string, THREE.AnimationAction> = {};
       const priorities: Record<string, number> = {};
@@ -392,6 +403,27 @@ export default function BoardCanvas3D({ store, state, selected, onLocationClick,
     attachModel(visual, store.champions.get(championId));
     return visual;
   }, [attachModel, store]);
+
+  // Rebuild unit models when the player switches a cosmetic skin.
+  useEffect(() => onSkinChange(() => {
+    const t = threeRef.current;
+    for (const visual of t.units.values()) {
+      const champion = store.champions.get(visual.championId);
+      if (!champion) continue;
+      const desired = getSkin(store.costumes, champion.id);
+      if (desired === visual.skinId) continue;
+      if (visual.modelRoot) visual.group.remove(visual.modelRoot);
+      if (visual.portrait) visual.group.remove(visual.portrait);
+      visual.modelRoot = undefined;
+      visual.portrait = undefined;
+      visual.mixer?.stopAllAction();
+      visual.mixer = undefined;
+      visual.actions = undefined;
+      visual.current = undefined;
+      visual.modelReady = false;
+      attachModel(visual, champion);
+    }
+  }), [attachModel, store]);
 
   // Initialize renderer, board, input and animation loop once.
   useEffect(() => {

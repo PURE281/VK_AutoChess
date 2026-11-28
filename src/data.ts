@@ -1,9 +1,11 @@
 import type { Champion, RosterDataset } from "./types";
+import { loadCostumeData, type CostumeData } from "./skins";
 
 export interface DataStore {
   dataset: RosterDataset;
   champions: Map<number, Champion>;
   season1: Champion[];
+  costumes: CostumeData;
 }
 
 export interface LoadProgress {
@@ -45,7 +47,8 @@ export async function loadGameData(onProgress?: (progress: LoadProgress) => void
   const season1 = dataset.seasons.season1
     .map((id) => champions.get(id))
     .filter((c): c is Champion => Boolean(c));
-  return { dataset, champions, season1 };
+  const costumes = await loadCostumeData();
+  return { dataset, champions, season1, costumes };
 }
 
 export { assetUrl } from "./config";
