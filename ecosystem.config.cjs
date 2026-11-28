@@ -19,5 +19,18 @@ module.exports = {
       restart_delay: 3000,
       max_restarts: 10,
     },
+    {
+      name: "valkyrie-skin-admin",
+      script: "server/start-admin.js",
+      interpreter: "node",
+      interpreter_args: "--import tsx",
+      cwd: __dirname,
+      env: {
+        NODE_ENV: "production",
+        SKIN_ADMIN_PORT: "8788",
+      },
+      restart_delay: 3000,
+      max_restarts: 10,
+    },
   ],
 };

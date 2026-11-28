@@ -11,7 +11,7 @@ import json, os
 from pathlib import Path
 
 ROOT=Path('public/assets/skins')
-OUT=Path('public/data/custom-skins.json')
+OUT=Path('public/assets/skins/manifest.json')
 
 def main():
     skins={}
@@ -44,7 +44,7 @@ def main():
     data={'version':1,'skins':skins}
     OUT.write_text(json.dumps(data,ensure_ascii=False,separators=(',',':')),encoding='utf-8')
     total=sum(len(v) for v in skins.values())
-    print(f'custom-skins.json written: {total} skins for {len(skins)} units')
+    print(f'manifest.json written: {total} skins for {len(skins)} units')
 
 if __name__=='__main__':
     main()

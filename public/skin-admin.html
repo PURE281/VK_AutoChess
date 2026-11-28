@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>皮肤管理后台 · VK AutoChess</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #171208; color: #e8dcc0; font-family: "Microsoft YaHei", sans-serif; min-height: 100vh; }
+  button { cursor: pointer; font-family: inherit; }
+  #login { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; gap: 14px; }
+  #login h1 { font-size: 22px; color: #e8be6a; }
+  #login input { padding: 10px 14px; font-size: 16px; width: 280px; background: #241b10; border: 1px solid #6b532a; color: #e8dcc0; border-radius: 6px; }
+  #login button { padding: 10px 32px; background: linear-gradient(180deg, #caa456, #8a6a2c); border: none; color: #1a1206; font-weight: 700; border-radius: 6px; font-size: 15px; }
+  #login .err { color: #ff7a7a; font-size: 13px; min-height: 18px; }
+  #app { display: none; grid-template-columns: 300px 1fr 380px; grid-template-rows: 48px 1fr; height: 100vh; }
+  header { grid-column: 1 / -1; display: flex; align-items: center; gap: 14px; padding: 0 16px; background: #241b10; border-bottom: 1px solid #6b532a; }
+  header h1 { font-size: 16px; color: #e8be6a; flex: 1; }
+  header input[type=password] { width: 150px; padding: 4px 8px; background: #171208; border: 1px solid #6b532a; color: #e8dcc0; border-radius: 4px; font-size: 12px; }
+  header .api-input { width: 230px; padding: 4px 8px; background: #171208; border: 1px solid #6b532a; color: #e8dcc0; border-radius: 4px; font-size: 12px; }
+  #sidebar { overflow-y: auto; padding: 12px; background: #1e1710; border-right: 1px solid #3a2d18; display: flex; flex-direction: column; gap: 12px; }
+  .sect { background: #241b10; border: 1px solid #3a2d18; border-radius: 8px; padding: 10px; }
+  .sect h3 { font-size: 13px; color: #caa456; margin-bottom: 8px; }
+  .sect label { font-size: 12px; color: #b8a888; display: block; margin: 6px 0 2px; }
+  .sect input[type=text], .sect select { width: 100%; padding: 6px 8px; background: #171208; border: 1px solid #4a3a20; color: #e8dcc0; border-radius: 4px; font-size: 13px; }
+  .sect input[type=range] { width: 100%; }
+  .row { display: flex; gap: 6px; align-items: center; }
+  .btn { padding: 7px 12px; background: #3a2d18; border: 1px solid #6b532a; color: #e8dcc0; border-radius: 5px; font-size: 13px; }
+  .btn:hover { border-color: #caa456; }
+  .btn.primary { background: linear-gradient(180deg, #caa456, #8a6a2c); color: #1a1206; font-weight: 700; border: none; }
+  .btn.danger { border-color: #8a3a3a; color: #ff9a9a; }
+  .btn.small { padding: 3px 8px; font-size: 11px; }
+  .tool-btn { width: 100%; text-align: left; margin: 2px 0; }
+  .tool-btn.active { border-color: #e8be6a; background: #4a3a20; box-shadow: 0 0 6px rgba(232,190,106,.4); }
+  #skinList { max-height: 180px; overflow-y: auto; }
+  .skin-item { display: flex; align-items: center; gap: 6px; padding: 5px; border-radius: 4px; font-size: 12px; background: #171208; margin: 3px 0; }
+  .skin-item span { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #center { display: flex; flex-direction: column; align-items: center; padding: 10px; overflow: auto; background: #171208; }
+  #texWrap { position: relative; border: 2px solid #4a3a20; border-radius: 6px; overflow: hidden; cursor: crosshair; background: repeating-conic-gradient(#2a2115 0 25%, #1e1710 0 50%) 0 0/20px 20px; }
+  #texCanvas { display: block; max-width: 100%; image-rendering: pixelated; }
+  #texTabs { display: flex; gap: 6px; margin-bottom: 8px; }
+  #texTabs button { padding: 5px 16px; border-radius: 5px; background: #3a2d18; border: 1px solid #6b532a; color: #e8dcc0; font-size: 13px; }
+  #texTabs button.active { background: #caa456; color: #1a1206; font-weight: 700; }
+  #preview { padding: 10px; background: #1e1710; border-left: 1px solid #3a2d18; display: flex; flex-direction: column; gap: 8px; overflow-y: auto; }
+  #glCanvas { width: 100%; aspect-ratio: 1; border-radius: 8px; border: 1px solid #4a3a20; background: #223; }
+  #status { font-size: 12px; color: #b8a888; min-height: 16px; padding: 4px 8px; }
+  #status.ok { color: #8aef9a; }
+  #status.err { color: #ff7a7a; }
+  .slider-row { display: grid; grid-template-columns: 52px 1fr 36px; gap: 6px; align-items: center; font-size: 12px; margin: 4px 0; }
+  #colorPickerRow { display: flex; gap: 8px; align-items: center; margin: 6px 0; }
+  #brushColor { width: 42px; height: 30px; border: none; background: none; padding: 0; cursor: pointer; }
+</style>
+</head>
+<body>
+<div id="login">
+  <h1>皮肤管理后台</h1>
+  <input type="password" id="pwInput" placeholder="管理密码" autocomplete="off">
+  <button id="pwBtn">进入</button>
+  <div class="err" id="pwErr"></div>
+</div>
+
+<div id="app">
+  <header>
+    <h1>皮肤管理后台</h1>
+    <input class="api-input" id="apiBase" title="管理 API 地址">
+    <input type="password" id="pwHeader" placeholder="管理密码" title="管理密码">
+    <button class="btn small" id="checkApi">测试连接</button>
+  </header>
+
+  <div id="sidebar">
+    <div class="sect">
+      <h3>1. 选择角色模型</h3>
+      <input type="text" id="unitSearch" placeholder="搜索角色名…">
+      <label>角色</label>
+      <select id="unitSelect"></select>
+      <button class="btn primary" id="loadModel" style="width:100%;margin-top:8px">加载模型与贴图</button>
+    </div>
+    <div class="sect">
+      <h3>2. 编辑工具</h3>
+      <button class="btn tool-btn active" data-tool="brush">🖌 画笔（按住绘制）</button>
+      <button class="btn tool-btn" data-tool="replace">🎨 选色替换（点击取色）</button>
+      <div id="colorPickerRow">
+        <input type="color" id="brushColor" value="#ff3344">
+        <label style="font-size:12px">粗细 <input type="range" id="brushSize" min="1" max="40" value="6" style="width:90px;vertical-align:middle"></label>
+      </div>
+      <div id="replaceCtrl" style="display:none">
+        <label>替换偏移（色相/饱和/明度）</label>
+        <div class="slider-row"><span>色相</span><input type="range" id="repHue" min="-180" max="180" value="120"><em id="repHueV">120</em></div>
+        <div class="slider-row"><span>饱和</span><input type="range" id="repSat" min="-100" max="100" value="0"><em id="repSatV">0</em></div>
+        <div class="slider-row"><span>明度</span><input type="range" id="repLit" min="-100" max="100" value="0"><em id="repLitV">0</em></div>
+        <label>容差 <input type="range" id="repTol" min="5" max="120" value="40" style="width:100px;vertical-align:middle"></label>
+      </div>
+      <label>整体调整（点击"应用全局"生效）</label>
+      <div class="slider-row"><span>色相</span><input type="range" id="gHue" min="-180" max="180" value="0"><em id="gHueV">0</em></div>
+      <div class="slider-row"><span>饱和</span><input type="range" id="gSat" min="-100" max="100" value="0"><em id="gSatV">0</em></div>
+      <div class="slider-row"><span>明度</span><input type="range" id="gLit" min="-100" max="100" value="0"><em id="gLitV">0</em></div>
+      <div class="row" style="margin-top:6px">
+        <button class="btn small" id="applyGlobal">应用全局</button>
+        <button class="btn small" id="undoBtn">撤销</button>
+        <button class="btn small danger" id="resetBtn">重置贴图</button>
+      </div>
+    </div>
+    <div class="sect">
+      <h3>3. 保存上传</h3>
+      <label>皮肤 key（英文数字）</label>
+      <input type="text" id="skinKey" placeholder="my-skin">
+      <label>显示名称</label>
+      <input type="text" id="skinName" placeholder="我的皮肤">
+      <label>作者</label>
+      <input type="text" id="skinAuthor" placeholder="你的名字">
+      <button class="btn primary" id="uploadBtn" style="width:100%;margin-top:8px">上传皮肤</button>
+    </div>
+    <div class="sect">
+      <h3>已有皮肤</h3>
+      <button class="btn small" id="refreshList" style="margin-bottom:6px">刷新列表</button>
+      <div id="skinList"></div>
+    </div>
+  </div>
+
+  <div id="center">
+    <div id="texTabs">
+      <button data-tex="body" class="active">身体贴图</button>
+      <button data-tex="face">脸部贴图</button>
+    </div>
+    <div id="texWrap"><canvas id="texCanvas" width="512" height="512"></canvas></div>
+    <div id="status"></div>
+  </div>
+
+  <div id="preview">
+    <h3 style="font-size:13px;color:#caa456">3D 实时预览（拖动旋转）</h3>
+    <canvas id="glCanvas" width="360" height="360"></canvas>
+  </div>
+</div>
+
+<script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.170.0/build/three.module.js","three/addons/":"https://unpkg.com/three@0.170.0/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+const ASSET_BASE = 'https://pub-1dfe6bb1f974425580d2845f59875408.r2.dev';
+const SITE_BASE = './';  // relative - resolves correctly both in dev and under /VK_AutoChess/
+const $ = (id) => document.getElementById(id);
+const state = {
+  password: sessionStorage.getItem('skinAdminPw') || '',
+  apiBase: localStorage.getItem('skinAdminApi') || 'https://pvp.pure81.site/skin-api',
+  roster: null,
+  unitId: null,
+  textures: { body: null, face: null },   // original ImageBitmaps
+  edited: { body: null, face: null },     // working canvases
+  undoStack: { body: [], face: [] },
+  activeTex: 'body',
+  tool: 'brush',
+  scene: null, camera: null, renderer: null, model: null,
+  threeTextures: {},  // key -> CanvasTexture override
+  materials: { body: null, face: null },
+  existingSkins: {},
+  editingKey: null,
+};
+
+// ---------- login ----------
+function enterApp() {
+  $('login').style.display = 'none';
+  $('app').style.display = 'grid';
+  $('apiBase').value = state.apiBase;
+  $('pwHeader').value = state.password;
+  initUnits();
+  initEditor();
+  initThree();
+}
+$('pwBtn').onclick = async () => {
+  const pw = $('pwInput').value.trim();
+  if (!pw) { $('pwErr').textContent = '请输入密码'; return; }
+  state.password = pw;
+  sessionStorage.setItem('skinAdminPw', pw);
+  // validate against the API
+  try {
+    const res = await fetch(`${$('apiBase')?.value || state.apiBase}/health`);
+    if (res.ok) { enterApp(); return; }
+  } catch { /* fall through - still enter, upload will validate */ }
+  enterApp();
+};
+if (state.password) {
+  // still require explicit entry - just prefill
+  $('pwInput').value = state.password;
+}
+$('apiBase').addEventListener('change', () => {
+  state.apiBase = $('apiBase').value.trim().replace(/\/+$/, '');
+  localStorage.setItem('skinAdminApi', state.apiBase);
+});
+$('pwHeader').addEventListener('change', () => {
+  state.password = $('pwHeader').value;
+  sessionStorage.setItem('skinAdminPw', state.password);
+});
+$('checkApi').onclick = async () => {
+  setStatus('测试连接…');
+  try {
+    const res = await fetch(`${state.apiBase}/health`);
+    setStatus(res.ok ? 'API 连接正常' : `API 异常：HTTP ${res.status}`, res.ok ? 'ok' : 'err');
+  } catch (e) {
+    setStatus('API 无法连接：' + e.message, 'err');
+  }
+};
+
+function setStatus(msg, cls = '') {
+  $('status').textContent = msg;
+  $('status').className = cls;
+}
+
+// ---------- unit list ----------
+async function initUnits() {
+  try {
+    const [rosterRes, modelsRes] = await Promise.all([
+      fetch(`${SITE_BASE}data/roster.json`),
+      fetch(`${SITE_BASE}data/models.json`),
+    ]);
+    const roster = await rosterRes.json();
+    const models = await modelsRes.json();
+    const chars = roster.characters ?? roster;
+    const modelIds = new Set(Object.keys(models.models ?? {}).map(Number));
+    state.roster = chars.filter((c) => modelIds.has(c.id));
+    fillUnitSelect(state.roster);
+  } catch (e) {
+    setStatus('角色数据加载失败：' + e.message, 'err');
+  }
+}
+function fillUnitSelect(list) {
+  const sel = $('unitSelect');
+  sel.innerHTML = list.slice(0, 400).map((c) => `<option value="${c.id}">${c.id} · ${c.name}</option>`).join('');
+}
+$('unitSearch').addEventListener('input', () => {
+  const q = $('unitSearch').value.trim();
+  if (!state.roster) return;
+  fillUnitSelect(state.roster.filter((c) => c.name.includes(q) || String(c.id).includes(q)));
+});
+
+// ---------- GLB texture extraction ----------
+async function extractGlbTextures(unitId) {
+  const res = await fetch(`${ASSET_BASE}/assets/models/${unitId}.glb`);
+  if (!res.ok) throw new Error(`GLB 下载失败 HTTP ${res.status}`);
+  const buf = await res.arrayBuffer();
+  const dv = new DataView(buf);
+  const jsonLen = dv.getUint32(12, true);
+  const gltf = JSON.parse(new TextDecoder().decode(new Uint8Array(buf, 20, jsonLen)));
+  const binStart = 20 + jsonLen + 8;
+  const out = {};
+  for (const mat of gltf.materials ?? []) {
+    const texInfo = mat.pbrMetallicRoughness?.baseColorTexture;
+    if (!texInfo) continue;
+    const tex = gltf.textures[texInfo.index];
+    const img = gltf.images[tex.source];
+    const bv = gltf.bufferViews[img.bufferView];
+    const start = binStart + (bv.byteOffset ?? 0);
+    const blob = new Blob([buf.slice(start, start + bv.byteLength)], { type: 'image/png' });
+    const bitmap = await createImageBitmap(blob);
+    const kind = mat.name === 'body_m' ? 'body' : mat.name === 'face_m' ? 'face' : null;
+    if (kind && !out[kind]) out[kind] = bitmap;
+  }
+  return out;
+}
+
+// ---------- editor ----------
+function makeWorkingCanvas(bitmap) {
+  const c = document.createElement('canvas');
+  c.width = bitmap.width; c.height = bitmap.height;
+  c.getContext('2d').drawImage(bitmap, 0, 0);
+  return c;
+}
+
+function initEditor() {
+  const canvas = $('texCanvas');
+  let painting = false;
+  let last = null;
+  canvas.addEventListener('pointerdown', (e) => {
+    if (!currentWork()) return;
+    const pos = canvasPos(e);
+    if (state.tool === 'brush') {
+      painting = true; last = pos;
+      pushUndo();
+      paintDot(pos);
+    } else if (state.tool === 'replace') {
+      pushUndo();
+      replaceColorAt(pos);
+    }
+    canvas.setPointerCapture(e.pointerId);
+  });
+  canvas.addEventListener('pointermove', (e) => {
+    if (!painting || state.tool !== 'brush') return;
+    const pos = canvasPos(e);
+    paintLine(last, pos);
+    last = pos;
+  });
+  canvas.addEventListener('pointerup', () => { painting = false; });
+
+  document.querySelectorAll('#texTabs button').forEach((b) => {
+    b.onclick = () => {
+      document.querySelectorAll('#texTabs button').forEach((x) => x.classList.remove('active'));
+      b.classList.add('active');
+      state.activeTex = b.dataset.tex;
+      showTexture();
+    };
+  });
+  document.querySelectorAll('.tool-btn').forEach((b) => {
+    b.onclick = () => {
+      document.querySelectorAll('.tool-btn').forEach((x) => x.classList.remove('active'));
+      b.classList.add('active');
+      state.tool = b.dataset.tool;
+      $('replaceCtrl').style.display = state.tool === 'replace' ? 'block' : 'none';
+    };
+  });
+  for (const id of ['gHue', 'gSat', 'gLit', 'repHue', 'repSat', 'repLit']) {
+    $(id).addEventListener('input', () => { $(id + 'V').textContent = $(id).value; });
+  }
+  $('applyGlobal').onclick = () => { pushUndo(); applyGlobalAdjust(); };
+  $('undoBtn').onclick = undo;
+  $('resetBtn').onclick = resetTexture;
+}
+
+function currentWork() { return state.edited[state.activeTex]; }
+function currentBitmap() { return state.textures[state.activeTex]; }
+
+function canvasPos(e) {
+  const canvas = $('texCanvas');
+  const rect = canvas.getBoundingClientRect();
+  return {
+    x: (e.clientX - rect.left) * (canvas.width / rect.width),
+    y: (e.clientY - rect.top) * (canvas.height / rect.height),
+  };
+}
+
+function pushUndo() {
+  const work = currentWork();
+  if (!work) return;
+  const stack = state.undoStack[state.activeTex];
+  const snap = document.createElement('canvas');
+  snap.width = work.width; snap.height = work.height;
+  snap.getContext('2d').drawImage(work, 0, 0);
+  stack.push(snap);
+  if (stack.length > 12) stack.shift();
+}
+function undo() {
+  const stack = state.undoStack[state.activeTex];
+  const work = currentWork();
+  if (!stack.length || !work) return;
+  const snap = stack.pop();
+  work.getContext('2d').clearRect(0, 0, work.width, work.height);
+  work.getContext('2d').drawImage(snap, 0, 0);
+  showTexture();
+}
+function resetTexture() {
+  const bitmap = currentBitmap();
+  const work = currentWork();
+  if (!bitmap || !work) return;
+  pushUndo();
+  const ctx = work.getContext('2d');
+  ctx.clearRect(0, 0, work.width, work.height);
+  ctx.drawImage(bitmap, 0, 0);
+  showTexture();
+}
+
+function paintDot(pos) {
+  const work = currentWork();
+  const ctx = work.getContext('2d');
+  ctx.fillStyle = $('brushColor').value;
+  ctx.beginPath();
+  ctx.arc(pos.x, pos.y, Number($('brushSize').value) / 2, 0, Math.PI * 2);
+  ctx.fill();
+  showTexture();
+}
+function paintLine(a, b) {
+  const work = currentWork();
+  const ctx = work.getContext('2d');
+  ctx.strokeStyle = $('brushColor').value;
+  ctx.lineWidth = Number($('brushSize').value);
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(a.x, a.y);
+  ctx.lineTo(b.x, b.y);
+  ctx.stroke();
+  showTexture();
+}
+
+// hsl helpers
+function rgbToHsl(r, g, b) {
+  r /= 255; g /= 255; b /= 255;
+  const max = Math.max(r, g, b), min = Math.min(r, g, b);
+  const l = (max + min) / 2;
+  let h = 0, s = 0;
+  if (max !== min) {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    if (max === r) h = ((g - b) / d + (g < b ? 6 : 0)) / 6;
+    else if (max === g) h = ((b - r) / d + 2) / 6;
+    else h = ((r - g) / d + 4) / 6;
+  }
+  return [h * 360, s * 100, l * 100];
+}
+function hslToRgb(h, s, l) {
+  h = ((h % 360) + 360) % 360 / 360; s = Math.max(0, Math.min(1, s / 100)); l = Math.max(0, Math.min(1, l / 100));
+  if (s === 0) { const v = Math.round(l * 255); return [v, v, v]; }
+  const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+  const p = 2 * l - q;
+  const f = (t) => {
+    if (t < 0) t += 1; if (t > 1) t -= 1;
+    if (t < 1 / 6) return p + (q - p) * 6 * t;
+    if (t < 1 / 2) return q;
+    if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+    return p;
+  };
+  return [Math.round(f(h + 1 / 3) * 255), Math.round(f(h) * 255), Math.round(f(h - 1 / 3) * 255)];
+}
+
+function adjustImageData(imgData, fn) {
+  const d = imgData.data;
+  for (let i = 0; i < d.length; i += 4) {
+    if (d[i + 3] < 8) continue;
+    const hsl = rgbToHsl(d[i], d[i + 1], d[i + 2]);
+    const out = fn(hsl, d[i], d[i + 1], d[i + 2]);
+    if (out) {
+      const [r, g, b] = hslToRgb(out[0], out[1], out[2]);
+      d[i] = r; d[i + 1] = g; d[i + 2] = b;
+    }
+  }
+}
+
+function applyGlobalAdjust() {
+  const work = currentWork();
+  if (!work) return;
+  const dh = Number($('gHue').value), ds = Number($('gSat').value), dl = Number($('gLit').value);
+  if (!dh && !ds && !dl) return;
+  const ctx = work.getContext('2d');
+  const img = ctx.getImageData(0, 0, work.width, work.height);
+  adjustImageData(img, ([h, s, l]) => [h + dh, Math.max(0, Math.min(100, s + ds)), Math.max(0, Math.min(100, l + dl))]);
+  ctx.putImageData(img, 0, 0);
+  showTexture();
+}
+
+function replaceColorAt(pos) {
+  const work = currentWork();
+  if (!work) return;
+  const ctx = work.getContext('2d');
+  const img = ctx.getImageData(0, 0, work.width, work.height);
+  const i0 = (Math.floor(pos.y) * work.width + Math.floor(pos.x)) * 4;
+  const target = rgbToHsl(img.data[i0], img.data[i0 + 1], img.data[i0 + 2]);
+  const tol = Number($('repTol').value);
+  const dh = Number($('repHue').value), ds = Number($('repSat').value), dl = Number($('repLit').value);
+  adjustImageData(img, ([h, s, l]) => {
+    let hueDiff = Math.abs(h - target[0]);
+    if (hueDiff > 180) hueDiff = 360 - hueDiff;
+    const satDiff = Math.abs(s - target[1]);
+    const litDiff = Math.abs(l - target[2]);
+    if (hueDiff <= tol && satDiff <= tol * 1.2 && litDiff <= tol * 1.5) {
+      return [h + dh, Math.max(0, Math.min(100, s + ds)), Math.max(0, Math.min(100, l + dl))];
+    }
+    return null;
+  });
+  ctx.putImageData(img, 0, 0);
+  showTexture();
+}
+
+function showTexture() {
+  const work = currentWork();
+  const canvas = $('texCanvas');
+  if (!work) return;
+  canvas.width = work.width; canvas.height = work.height;
+  canvas.getContext('2d').drawImage(work, 0, 0);
+  // live-update the 3D preview
+  const key = state.activeTex;
+  if (state.threeTextures[key]) {
+    state.threeTextures[key].image = work;
+    state.threeTextures[key].needsUpdate = true;
+  }
+}
+
+// ---------- three.js preview ----------
+function initThree() {
+  const canvas = $('glCanvas');
+  state.renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+  state.scene = new THREE.Scene();
+  state.scene.background = new THREE.Color(0x2a2438);
+  state.camera = new THREE.PerspectiveCamera(35, 1, 0.01, 100);
+  state.scene.add(new THREE.HemisphereLight(0xffffff, 0x445566, 2.0));
+  const dl = new THREE.DirectionalLight(0xffffff, 1.8);
+  dl.position.set(2, 4, 3);
+  state.scene.add(dl);
+  let rotY = 0.4, rotX = 0, dragging = false, px = 0, py = 0, autoRot = true;
+  canvas.addEventListener('pointerdown', (e) => { dragging = true; autoRot = false; px = e.clientX; py = e.clientY; canvas.setPointerCapture(e.pointerId); });
+  canvas.addEventListener('pointermove', (e) => {
+    if (!dragging) return;
+    rotY += (e.clientX - px) * 0.012;
+    rotX = Math.max(-0.6, Math.min(0.6, rotX + (e.clientY - py) * 0.008));
+    px = e.clientX; py = e.clientY;
+  });
+  canvas.addEventListener('pointerup', () => { dragging = false; });
+  const loop = () => {
+    requestAnimationFrame(loop);
+    if (autoRot) rotY += 0.006;
+    if (state.model) {
+      state.model.rotation.y = rotY;
+      state.model.rotation.x = rotX;
+    }
+    state.renderer.render(state.scene, state.camera);
+  };
+  loop();
+}
+
+async function loadUnitModel(unitId) {
+  // remove old
+  if (state.model) { state.scene.remove(state.model); state.model = null; }
+  state.threeTextures = {};
+  const gltf = await new GLTFLoader().loadAsync(`${ASSET_BASE}/assets/models/${unitId}.glb`);
+  const model = gltf.scene;
+  model.scale.setScalar(72);
+  state.materials = { body: null, face: null };
+  model.traverse((o) => {
+    if (!(o.isMesh || o.isSkinnedMesh) || !o.material) return;
+    const kind = o.material.name === 'body_m' ? 'body' : o.material.name === 'face_m' ? 'face' : null;
+    if (!kind) return;
+    o.material = o.material.clone();
+    if (!state.materials[kind]) state.materials[kind] = [];
+    state.materials[kind].push(o.material);
+  });
+  state.scene.add(model);
+  state.model = model;
+  // frame
+  const box = new THREE.Box3().setFromObject(model);
+  const c = box.getCenter(new THREE.Vector3());
+  const s = box.getSize(new THREE.Vector3());
+  state.camera.position.set(c.x, c.y + s.y * 0.05, c.z + Math.max(s.x, s.y, s.z) * 1.5);
+  state.camera.lookAt(c.x, c.y, c.z);
+  applyEditedToPreview();
+}
+
+// hook edited canvases into the preview materials
+function applyEditedToPreview() {
+  for (const kind of ['body', 'face']) {
+    const work = state.edited[kind];
+    if (!work || !state.materials[kind]) continue;
+    if (!state.threeTextures[kind]) {
+      const tex = new THREE.CanvasTexture(work);
+      tex.flipY = false;
+      tex.colorSpace = THREE.SRGBColorSpace;
+      tex.wrapS = THREE.RepeatWrapping;
+      tex.wrapT = THREE.RepeatWrapping;
+      state.threeTextures[kind] = tex;
+    }
+    for (const mat of state.materials[kind]) {
+      mat.map = state.threeTextures[kind];
+      mat.needsUpdate = true;
+    }
+  }
+}
+
+// ---------- load model + textures ----------
+$('loadModel').onclick = async () => {
+  const unitId = $('unitSelect').value;
+  if (!unitId) return;
+  state.unitId = unitId;
+  state.editingKey = null;
+  setStatus('下载模型与贴图…');
+  try {
+    const [texs] = await Promise.all([extractGlbTextures(unitId), loadUnitModel(unitId)]);
+    state.textures = texs;
+    state.edited = {
+      body: texs.body ? makeWorkingCanvas(texs.body) : null,
+      face: texs.face ? makeWorkingCanvas(texs.face) : null,
+    };
+    state.undoStack = { body: [], face: [] };
+    applyEditedToPreview();
+    showTexture();
+    setStatus(`已加载 ${unitId}，开始编辑吧`, 'ok');
+    loadSkinList();
+  } catch (e) {
+    setStatus('加载失败：' + e.message, 'err');
+  }
+};
+
+// ---------- upload ----------
+$('uploadBtn').onclick = async () => {
+  const skinKey = $('skinKey').value.trim();
+  if (!state.unitId || !skinKey) { setStatus('请先加载模型并填写皮肤 key', 'err'); return; }
+  if (!state.edited.body) { setStatus('身体贴图不能为空', 'err'); return; }
+  setStatus('上传中…');
+  try {
+    const toBase64 = (canvas) => canvas.toDataURL('image/png').split(',')[1];
+    const payload = {
+      unitId: state.unitId,
+      skinKey,
+      name: $('skinName').value.trim() || skinKey,
+      author: $('skinAuthor').value.trim(),
+      bodyPng: toBase64(state.edited.body),
+    };
+    if (state.edited.face) payload.facePng = toBase64(state.edited.face);
+    const res = await fetch(`${state.apiBase}/upload`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'x-admin-key': state.password },
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json();
+    if (res.ok && data.ok) {
+      setStatus(`上传成功！线上皮肤库已更新（${data.skins} 个皮肤）`, 'ok');
+      loadSkinList();
+    } else if (res.status === 401) {
+      setStatus('密码错误，上传被拒绝', 'err');
+    } else {
+      setStatus('上传失败：' + (data.error || res.status), 'err');
+    }
+  } catch (e) {
+    setStatus('上传失败：' + e.message, 'err');
+  }
+};
+
+// ---------- existing skins ----------
+async function loadSkinList() {
+  try {
+    const res = await fetch(`${ASSET_BASE}/assets/skins/manifest.json?t=${Date.now()}`);
+    if (!res.ok) { $('skinList').innerHTML = '<div style="font-size:12px;color:#888">暂无皮肤</div>'; return; }
+    const data = await res.json();
+    state.existingSkins = data.skins ?? {};
+    const items = [];
+    for (const [unitId, list] of Object.entries(state.existingSkins)) {
+      for (const s of list) {
+        items.push(`<div class="skin-item"><span>${unitId} · ${s.name}</span>
+          <button class="btn small" data-edit="${unitId}:${s.key}">编辑</button>
+          <button class="btn small danger" data-del="${unitId}:${s.key}">删</button></div>`);
+      }
+    }
+    $('skinList').innerHTML = items.join('') || '<div style="font-size:12px;color:#888">暂无皮肤</div>';
+    $('skinList').querySelectorAll('[data-del]').forEach((b) => {
+      b.onclick = () => deleteSkin(...b.dataset.del.split(':'));
+    });
+    $('skinList').querySelectorAll('[data-edit]').forEach((b) => {
+      b.onclick = () => editExisting(...b.dataset.edit.split(':'));
+    });
+  } catch (e) {
+    setStatus('皮肤列表加载失败：' + e.message, 'err');
+  }
+}
+$('refreshList').onclick = loadSkinList;
+
+async function deleteSkin(unitId, key) {
+  if (!confirm(`确定删除皮肤 ${unitId}/${key}？`)) return;
+  try {
+    const res = await fetch(`${state.apiBase}/delete`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'x-admin-key': state.password },
+      body: JSON.stringify({ unitId, skinKey: key }),
+    });
+    const data = await res.json();
+    setStatus(data.ok ? '已删除' : '删除失败：' + (data.error || res.status), data.ok ? 'ok' : 'err');
+    loadSkinList();
+  } catch (e) {
+    setStatus('删除失败：' + e.message, 'err');
+  }
+}
+
+async function editExisting(unitId, key) {
+  setStatus(`加载皮肤 ${key}…`);
+  try {
+    if (String(state.unitId) !== String(unitId) || !state.model) {
+      state.unitId = unitId;
+      const [texs] = await Promise.all([extractGlbTextures(unitId), loadUnitModel(unitId)]);
+      state.textures = texs;
+    }
+    const loadImg = async (url) => {
+      const res = await fetch(url);
+      const bmp = await createImageBitmap(await res.blob());
+      return makeWorkingCanvas(bmp);
+    };
+    const base = `${ASSET_BASE}/assets/skins/${unitId}/${key}`;
+    state.edited.body = await loadImg(`${base}/body.png?t=${Date.now()}`);
+    const hasFace = (state.existingSkins[unitId] ?? []).find((s) => s.key === key)?.face;
+    if (hasFace) {
+      state.edited.face = await loadImg(`${base}/face.png?t=${Date.now()}`);
+    } else if (state.textures.face) {
+      state.edited.face = makeWorkingCanvas(state.textures.face);
+    }
+    state.undoStack = { body: [], face: [] };
+    $('skinKey').value = key;
+    const meta = (state.existingSkins[unitId] ?? []).find((s) => s.key === key);
+    if (meta) { $('skinName').value = meta.name; $('skinAuthor').value = meta.author; }
+    applyEditedToPreview();
+    showTexture();
+    setStatus(`已载入皮肤 ${key}，可继续编辑后重新上传`, 'ok');
+  } catch (e) {
+    setStatus('载入皮肤失败：' + e.message, 'err');
+  }
+}
+</script>
+</body>
+</html>

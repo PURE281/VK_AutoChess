@@ -50,7 +50,10 @@ export async function loadCostumeData(): Promise<CostumeData> {
 }
 
 export async function loadCustomSkins(): Promise<CustomSkinData> {
-  const response = await fetch(`${import.meta.env.BASE_URL}data/custom-skins.json`);
+  // The manifest lives with the skin assets so the skin-admin backend can update
+  // it on R2 without a frontend redeploy.
+  const { assetUrl } = await import("./config");
+  const response = await fetch(assetUrl("assets/skins/manifest.json"));
   if (!response.ok) return { version: 1, skins: {} };
   return (await response.json()) as CustomSkinData;
 }
