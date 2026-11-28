@@ -5,7 +5,7 @@ import type { DataStore } from "../data";
 import { assetUrl, className, elementNames, raceColor, raceName, roleColor, roleName } from "../data";
 import { itemById } from "../game/definitions";
 import { deployLimit, firstEmptyBench, firstEmptyBoard, getUnitAt, sellValue, starProgress } from "../game/roster";
-import { costumeOptions, getSkin, setSkin } from "../skins";
+import { costumeOptions, customSkinKey, customSkinOptions, getSkin, setSkin } from "../skins";
 
 interface DetailPanelProps {
   store: DataStore;
@@ -98,7 +98,7 @@ export default function DetailPanel({ store, player, selected, inspectedChampion
       </div>
       <div className="detail-hero">
         <div className="standing-frame">
-          <img src={assetUrl((store.champions.get(getSkin(store.costumes, champion.id)) ?? champion).assets.standing)} alt={champion.name} draggable={false} />
+          <img src={assetUrl((() => { const sc = getSkin(store.costumes, champion.id); return (typeof sc === "number" ? store.champions.get(sc) : undefined) ?? champion; })().assets.standing)} alt={champion.name} draggable={false} />
         </div>
         <div className="detail-heading">
           <h3>{champion.name}</h3>
@@ -114,7 +114,7 @@ export default function DetailPanel({ store, player, selected, inspectedChampion
 
       {(() => {
         const options = costumeOptions(store.costumes, champion.id);
-        if (options.length < 2) return null;
+        if (options.length < 2 && customSkinOptions(store.customSkins, champion.id).length === 0) return null;
         const active = getSkin(store.costumes, champion.id);
         return (
           <div className="skin-picker">
@@ -134,6 +134,23 @@ export default function DetailPanel({ store, player, selected, inspectedChampion
                     }}
                   >
                     <img src={assetUrl(skinChampion.assets.icon)} alt={skinChampion.name} draggable={false} />
+                  </button>
+                );
+              })}
+              {customSkinOptions(store.customSkins, champion.id).map((def) => {
+                const key = customSkinKey(champion.id, def.key);
+                return (
+                  <button
+                    key={key}
+                    className={`skin-option custom${key === active ? " active" : ""}`}
+                    title={`${def.name}${def.author ? ` · ${def.author}` : ""}（自定义皮肤）`}
+                    onClick={() => {
+                      setSkin(store.costumes, champion.id, key);
+                      setSkinTick((v) => v + 1);
+                    }}
+                  >
+                    <img src={assetUrl(def.icon ?? champion.assets.icon)} alt={def.name} draggable={false} />
+                    <span className="skin-custom-badge">自</span>
                   </button>
                 );
               })}

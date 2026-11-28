@@ -7,7 +7,7 @@ import type { Champion, CombatResult, CombatUnitSnapshot, GameState, LocationRef
 import type { DataStore } from "../data";
 import { assetUrl } from "../data";
 import { deployLimit } from "../game/roster";
-import { getSkin, onSkinChange } from "../skins";
+import { customSkinDef, getSkin, onSkinChange, parseCustomSkinKey, type CustomSkinDef } from "../skins";
 import { sound } from "../sound";
 
 interface Props {
@@ -45,7 +45,7 @@ type UnitVisual = {
   snapFacing?: boolean;
   modelReady: boolean;
   celebrateUntil?: number;
-  skinId?: number;
+  skinId?: number | string;
   portrait?: THREE.Object3D;
   modelRoot?: THREE.Object3D;
 };
@@ -235,9 +235,10 @@ export default function BoardCanvas3D({ store, state, selected, onLocationClick,
     };
   }, [combatKey]);
 
-  const loadModel = useCallback((championId: number) => {
+  const loadModel = useCallback((championId: number, customSkin?: CustomSkinDef | null) => {
     const t = threeRef.current;
-    let promise = t.modelCache.get(championId);
+    const cacheKey: any = customSkin ? `cs:${championId}:${customSkin.key}` : championId;
+    let promise = t.modelCache.get(cacheKey);
     if (!promise) {
       modelLoadTracker.begin(championId);
       promise = new Promise((resolve) => {
@@ -245,6 +246,27 @@ export default function BoardCanvas3D({ store, state, selected, onLocationClick,
           assetUrl(`assets/models/${championId}.glb`),
           (gltf) => {
             modelLoadTracker.end(championId);
+            if (customSkin) {
+              const bodyTex = t.textureLoader.load(assetUrl(customSkin.body));
+              const faceTex = customSkin.face ? t.textureLoader.load(assetUrl(customSkin.face)) : null;
+              for (const tex of [bodyTex, faceTex]) {
+                if (!tex) continue;
+                tex.flipY = false;
+                tex.colorSpace = THREE.SRGBColorSpace;
+                tex.wrapS = THREE.RepeatWrapping;
+                tex.wrapT = THREE.RepeatWrapping;
+              }
+              gltf.scene.traverse((obj: any) => {
+                if (!(obj.isMesh || obj.isSkinnedMesh) || !obj.material) return;
+                if (obj.material.name === "body_m" && bodyTex) {
+                  obj.material = obj.material.clone();
+                  obj.material.map = bodyTex;
+                } else if (obj.material.name === "face_m" && faceTex) {
+                  obj.material = obj.material.clone();
+                  obj.material.map = faceTex;
+                }
+              });
+            }
             resolve(gltf);
           },
           (event) => modelLoadTracker.progress(championId, event.loaded, event.total),
@@ -254,7 +276,7 @@ export default function BoardCanvas3D({ store, state, selected, onLocationClick,
           },
         );
       });
-      t.modelCache.set(championId, promise);
+      t.modelCache.set(cacheKey, promise);
     }
     return promise;
   }, []);
@@ -278,8 +300,11 @@ export default function BoardCanvas3D({ store, state, selected, onLocationClick,
     const t = threeRef.current;
     // Cosmetic skins only swap the GLB; the portrait card keeps the unit's own
     // icon so bench/shop identity stays readable.
-    const skinId = getSkin(store.costumes, champion.id);
-    visual.skinId = skinId;
+    const skinChoice = getSkin(store.costumes, champion.id);
+    const parsedCustom = parseCustomSkinKey(skinChoice);
+    const activeCustom = parsedCustom && parsedCustom.unitId === champion.id ? customSkinDef(store.customSkins, skinChoice) : null;
+    const modelId = typeof skinChoice === "number" ? skinChoice : champion.id;
+    visual.skinId = skinChoice;
     // Portrait fallback is visible immediately and remains as a small aura card if the GLB is absent.
     const texture = t.textureLoader.load(assetUrl(champion.assets.icon));
     texture.colorSpace = THREE.SRGBColorSpace;
@@ -292,7 +317,7 @@ export default function BoardCanvas3D({ store, state, selected, onLocationClick,
     visual.group.add(portrait);
     visual.portrait = portrait;
 
-    void loadModel(skinId).then((gltf) => {
+    void loadModel(modelId, activeCustom).then((gltf) => {
       if (!gltf || !visual.group.parent) return;
       visual.group.remove(portrait);
       if (visual.portrait === portrait) visual.portrait = undefined;

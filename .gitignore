@@ -5,7 +5,8 @@ node_modules/
 dist/
 
 # Extracted game assets (1.4GB+, regenerate with tools/*.py from local game cache)
-public/assets/
+public/assets/*
+!public/assets/skins/
 
 # Extraction caches and binary tools
 .cache/

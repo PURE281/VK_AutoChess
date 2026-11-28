@@ -1,0 +1,5 @@
+{
+  "name": "赤红洛基",
+  "author": "demo",
+  "note": "在 body.png/face.png 上原位改画即可，不要移动任何区域的位置。改完运行 python tools/build_custom_skins.py"
+}

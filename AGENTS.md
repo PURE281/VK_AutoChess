@@ -80,3 +80,9 @@ Before considering gameplay or rendering changes complete:
 
 - The project is version controlled at `https://github.com/PURE281/VK_AutoChess.git` (branch `main`). Commit completed work with the standard Devin commit format and push when the user asks.
 - `public/assets/`, `.cache/`, `.tools/`, `node_modules/`, `dist/` and verification artifacts are intentionally untracked; do not force-add them. `.verify` keeps only `*.ts`/`*.mjs` test sources.
+
+## Custom Skins
+
+- Player-made texture skins live in `public/assets/skins/<unitId>/<key>/` (body.png required, face.png/icon.png optional, skin.json metadata).
+- `python tools/extract_skin_template.py <unitId> [name]` extracts editable texture templates from a GLB; `python tools/build_custom_skins.py` regenerates `public/data/custom-skins.json` after editing.
+- Skin creation guide for users: `public/assets/skins/README.md`.

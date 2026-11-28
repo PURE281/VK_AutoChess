@@ -1396,3 +1396,20 @@ button, .shop-card, .bench-slot { touch-action: manipulation; }
   border-color: #e8be6a;
   box-shadow: 0 0 8px rgba(232, 190, 106, 0.55);
 }
+
+.skin-option.custom {
+  border-style: dashed;
+  position: relative;
+}
+.skin-custom-badge {
+  position: absolute;
+  right: -3px;
+  top: -3px;
+  font-size: 9px;
+  line-height: 1;
+  padding: 2px 3px;
+  border-radius: 4px;
+  background: #e8be6a;
+  color: #2a1d08;
+  font-weight: 700;
+}

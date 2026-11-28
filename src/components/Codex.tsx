@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import type { Champion } from "../types";
 import type { DataStore } from "../data";
 import { assetUrl, className, elementNames, raceColor, raceName, roleColor, roleName } from "../data";
-import { costumeOptions, getSkin, setSkin } from "../skins";
+import { costumeOptions, customSkinKey, customSkinOptions, getSkin, setSkin } from "../skins";
 import { sound } from "../sound";
 
 function clean(value: string | undefined): string {
@@ -98,7 +98,7 @@ export default function Codex({ store, onBack }: CodexProps) {
         {selected && (
           <aside className="codex-detail">
             <div className="codex-portrait-frame">
-              <img src={assetUrl((store.champions.get(getSkin(store.costumes, selected.id)) ?? selected).assets.standing || selected.assets.icon)} alt={selected.name} draggable={false} decoding="async" />
+              <img src={assetUrl((() => { const sc = getSkin(store.costumes, selected.id); return ((typeof sc === "number" ? store.champions.get(sc) : undefined) ?? selected).assets.standing; })() || selected.assets.icon)} alt={selected.name} draggable={false} decoding="async" />
               <div className="portrait-shade" />
               <div className="codex-title-block">
                 <span>{selected.cost} 费 · {className(store, selected.classType)} · 射程 {selected.range}</span>
@@ -113,7 +113,7 @@ export default function Codex({ store, onBack }: CodexProps) {
             </div>
             {(() => {
               const options = costumeOptions(store.costumes, selected.id);
-              if (options.length < 2) return null;
+              if (options.length < 2 && customSkinOptions(store.customSkins, selected.id).length === 0) return null;
               const active = getSkin(store.costumes, selected.id);
               return (
                 <section className="codex-section skin-picker-section">
@@ -133,6 +133,23 @@ export default function Codex({ store, onBack }: CodexProps) {
                           }}
                         >
                           <img src={assetUrl(skinChampion.assets.icon)} alt={skinChampion.name} draggable={false} />
+                        </button>
+                      );
+                    })}
+                    {customSkinOptions(store.customSkins, selected.id).map((def) => {
+                      const key = customSkinKey(selected.id, def.key);
+                      return (
+                        <button
+                          key={key}
+                          className={`skin-option custom${key === active ? " active" : ""}`}
+                          title={`${def.name}${def.author ? ` · ${def.author}` : ""}（自定义皮肤）`}
+                          onClick={() => {
+                            setSkin(store.costumes, selected.id, key);
+                            setSkinTick((v) => v + 1);
+                          }}
+                        >
+                          <img src={assetUrl(def.icon ?? selected.assets.icon)} alt={def.name} draggable={false} />
+                          <span className="skin-custom-badge">自</span>
                         </button>
                       );
                     })}
